@@ -2,9 +2,6 @@ use array_init::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-const DISPLAY_WIDTH: usize = 64;
-const DISPLAY_HEIGHT: usize = 32;
-
 const FONT_SET: [u8; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -28,6 +25,9 @@ const FONT_BEGIN_INDEX: usize = 0x50;
 #[derive(Debug)]
 pub struct Emulator {
     display: CanvasRenderingContext2d,
+    display_width: u32,
+    display_height: u32,
+
     memory: [u8; 4096],
 
     /** Program counter - points to the current instruction in the memory */
@@ -51,9 +51,11 @@ pub struct Emulator {
 }
 
 impl Emulator {
-    pub fn initialize() -> Emulator {
+    pub fn initialize(width: u32, height: u32) -> Emulator {
         // Default values
         let mut emulator = Emulator {
+            display_width: width,
+            display_height: height,
             display: {
                 let document = window().unwrap().document().unwrap();
                 let canvas_html_element = document
@@ -63,6 +65,10 @@ impl Emulator {
                 let canvas = canvas_html_element
                     .dyn_into::<HtmlCanvasElement>()
                     .expect("Error casting canvas type!");
+
+                canvas.set_width(width);
+                canvas.set_height(height);
+
                 canvas
                     .get_context("2d")
                     .unwrap()
@@ -91,10 +97,10 @@ impl Emulator {
     }
 
     pub fn test_display(&self) {
-        for x in 0..DISPLAY_WIDTH {
-            for y in 0..DISPLAY_HEIGHT {
+        for x in 0..self.display_width {
+            for y in 0..self.display_height {
                 let color = (x as f32) * (y as f32)
-                    / ((DISPLAY_WIDTH - 1) as f32 * (DISPLAY_HEIGHT - 1) as f32)
+                    / ((self.display_width - 1) as f32 * (self.display_height - 1) as f32)
                     * 255.0;
 
                 self.display
