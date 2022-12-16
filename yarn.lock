@@ -971,6 +971,7 @@ __metadata:
     stylelint-config-recommended: ^9.0.0
     stylelint-config-tailwindcss: ^0.0.7
     tailwindcss: ^3.2.4
+    tailwindcss-image-rendering: ^1.0.2
     typescript: ^4.9.4
     vite: ^4.0.1
     vite-plugin-top-level-await: ^1.2.2
@@ -1818,6 +1819,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"flat@npm:^4.1.0":
+  version: 4.1.1
+  resolution: "flat@npm:4.1.1"
+  dependencies:
+    is-buffer: ~2.0.3
+  bin:
+    flat: cli.js
+  checksum: 398be12185eb0f3c59797c3670a8c35d07020b673363175676afbaf53d6b213660e060488554cf82c25504986e1a6059bdbcc5d562e87ca3e972e8a33148e3ae
+  languageName: node
+  linkType: hard
+
 "flatted@npm:^3.1.0":
   version: 3.2.7
   resolution: "flatted@npm:3.2.7"
@@ -2197,6 +2209,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-buffer@npm:~2.0.3":
+  version: 2.0.5
+  resolution: "is-buffer@npm:2.0.5"
+  checksum: 764c9ad8b523a9f5a32af29bdf772b08eb48c04d2ad0a7240916ac2688c983bf5f8504bf25b35e66240edeb9d9085461f9b5dae1f3d2861c6b06a65fe983de42
+  languageName: node
+  linkType: hard
+
 "is-core-module@npm:^2.5.0, is-core-module@npm:^2.9.0":
   version: 2.11.0
   resolution: "is-core-module@npm:2.11.0"
@@ -2391,6 +2410,13 @@ __metadata:
   version: 4.4.2
   resolution: "lodash.truncate@npm:4.4.2"
   checksum: b463d8a382cfb5f0e71c504dcb6f807a7bd379ff1ea216669aa42c52fc28c54e404bfbd96791aa09e6df0de2c1d7b8f1b7f4b1a61f324d38fe98bc535aeee4f5
+  languageName: node
+  linkType: hard
+
+"lodash@npm:^4.17.11":
+  version: 4.17.21
+  resolution: "lodash@npm:4.17.21"
+  checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
   languageName: node
   linkType: hard
 
@@ -3609,6 +3635,16 @@ __metadata:
     string-width: ^4.2.3
     strip-ansi: ^6.0.1
   checksum: 08249c7046125d9d0a944a6e96cfe9ec66908d6b8a9db125531be6eb05fa0de047fd5542e9d43b4f987057f00a093b276b8d3e19af162a9c40db2681058fd306
+  languageName: node
+  linkType: hard
+
+"tailwindcss-image-rendering@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "tailwindcss-image-rendering@npm:1.0.2"
+  dependencies:
+    flat: ^4.1.0
+    lodash: ^4.17.11
+  checksum: 2644706d2cc5269ac770e51b7fde21a04b4b74f8776eedf541099775f093cdd69745b478041a84fb2e74729020ebab8d699940237604cfd522c99fcfc3836254
   languageName: node
   linkType: hard
 

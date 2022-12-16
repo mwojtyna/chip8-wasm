@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
 	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-	theme: {
-		extend: {},
+	theme: {},
+	variants: {
+		imageRendering: ["responsive"]
 	},
-	plugins: [],
+	plugins: [require("tailwindcss-image-rendering")()]
 };
