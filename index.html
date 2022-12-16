@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="font-mono">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<title>CHIP-8 emulator</title>
 	</head>
-	<body>
-		<canvas width="300" height="300" id="emulator"> Could not load emulator </canvas>
+	<body class="flex h-screen w-screen flex-col items-center gap-10 bg-zinc-800 p-10 text-white">
+		<h1 class="text-5xl font-bold">CHIP-8 EMULATOR</h1>
+		<canvas id="emulator" class="w-full">Could not load emulator</canvas>
 		<script type="module" src="/src/main.ts"></script>
 	</body>
 </html>
