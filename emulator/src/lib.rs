@@ -8,5 +8,5 @@ pub fn start() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     let emulator = chip8::Emulator::initialize();
-    emulator.smiley_face();
+    emulator.test_display();
 }
