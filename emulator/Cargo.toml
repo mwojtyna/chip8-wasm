@@ -7,12 +7,10 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+array-init = "2.1.0"
 console_error_panic_hook = "0.1.7"
 wasm-bindgen = "0.2.83"
-
-[dependencies.web-sys]
-version = "0.3.60"
-features = [
+web-sys = { version = "0.3.60", features = [
   'Document',
   'Element',
   'HtmlElement',
@@ -20,4 +18,8 @@ features = [
   "CanvasRenderingContext2d",
   'Node',
   'Window',
-]
+  "console"
+]}
+
+[features]
+default = []

@@ -7,6 +7,6 @@ extern crate console_error_panic_hook;
 pub fn start() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    let emulator = chip8::Emulator::new();
+    let emulator = chip8::Emulator::initialize();
     emulator.smiley_face();
 }
