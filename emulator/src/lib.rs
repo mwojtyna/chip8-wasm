@@ -51,9 +51,9 @@ pub fn start() {
     emulator
         .processor
         .memory
-        .load_rom(include_bytes!("roms/ibm-logo.ch8").to_vec());
+        .load_rom(include_bytes!("roms/test_opcode.ch8").to_vec());
 
-    debug!("{:#x?}", emulator.processor);
+    debug!("{:#X?}", emulator.processor);
     debug!("{:?}", emulator.screen);
 
     spawn_local(async move { emulator.start().await });

@@ -90,6 +90,16 @@ impl Processor {
 
                 debug!("Jump to {:#06X} -> {:#06X}", rest, self.pc);
             }
+            0x3 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let nn = rest & 0x0FF;
+                OpCode3XNN::execute(self, &[x, nn]);
+
+                debug!(
+                    "Skip next instruction if V{:#X} ({:#06X}) == {:#06X}",
+                    x, self.v[x as usize], nn
+                );
+            }
             0x6 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let nn = rest & 0x0FF;
@@ -135,7 +145,6 @@ impl Processor {
 
 #[cfg(test)]
 mod tests {
-
     use super::Processor;
     use array_init::array_init;
     use wasm_bindgen_test::wasm_bindgen_test;
