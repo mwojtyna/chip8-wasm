@@ -1,10 +1,10 @@
 {
 	"name": "chip8-wasm",
 	"version": "0.1.0",
-	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"wasm-pack": "wasm-pack build emulator/",
+		"wasm-build": "wasm-pack build emulator/",
+		"wasm-test": "wasm-pack test --node emulator/",
 		"build": "tsc && vite build && du -h -d0 dist",
 		"preview": "vite preview",
 		"lint": "eslint . && stylelint **/*.css"

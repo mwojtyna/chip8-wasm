@@ -12,6 +12,7 @@ console_error_panic_hook = "0.1.7"
 fluvio-wasm-timer = "0.2.5"
 wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.33"
+wasm-bindgen-test = "0.3.33"
 web-sys = { version = "0.3.60", features = [
   'Document',
   'Element',
@@ -22,6 +23,3 @@ web-sys = { version = "0.3.60", features = [
   'Window',
   "console"
 ]}
-
-[features]
-default = []
