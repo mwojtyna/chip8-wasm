@@ -3,7 +3,7 @@ use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
 
 #[derive(Debug)]
 pub struct Screen {
-    screen: CanvasRenderingContext2d,
+    context: CanvasRenderingContext2d,
 }
 impl Screen {
     pub const WIDTH: usize = 64;
@@ -11,7 +11,7 @@ impl Screen {
 
     pub fn init() -> Screen {
         Screen {
-            screen: {
+            context: {
                 let document = window().unwrap().document().unwrap();
                 let canvas_html_element = document
                     .query_selector("canvas")
@@ -42,8 +42,8 @@ impl Screen {
                     "#000"
                 };
 
-                self.screen.set_fill_style(&color.into());
-                self.screen.fill_rect(col as f64, row as f64, 1.0, 1.0);
+                self.context.set_fill_style(&color.into());
+                self.context.fill_rect(col as f64, row as f64, 1.0, 1.0);
             }
         }
     }
