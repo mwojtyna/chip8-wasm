@@ -1,0 +1,15 @@
+{
+	"css.validate": false,
+	"less.validate": false,
+	"scss.validate": false,
+	"stylelint.validate": ["css", "scss"],
+	"cSpell.words": ["ANNN", "bindgen", "DXYN", "fluvio"],
+	"emeraldwalk.runonsave": {
+		"commands": [
+			{
+				"match": "emulator/src/.*",
+				"cmd": "yarn wasm-build"
+			}
+		]
+	}
+}
