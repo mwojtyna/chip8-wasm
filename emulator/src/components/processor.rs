@@ -1,3 +1,4 @@
+use super::screen::Screen;
 use array_init::array_init;
 use web_sys::*;
 
@@ -25,37 +26,38 @@ const ROM_BEGIN_INDEX: usize = 0x200;
 #[derive(Debug)]
 pub struct Processor {
     /** Program counter - points to the current instruction in the memory */
-    pc: u16,
+    pub pc: u16,
 
     /** Index register - point at locations in memory */
-    i: u16,
+    pub i: u16,
 
     /** A stack for 16-bit addresses, which is used to call subroutines/functions and return from them */
-    stack: Vec<u16>,
+    pub stack: Vec<u16>,
 
     /** Delay timer - 8-bit value which is decremented at a rate of 60 Hz (60 times per second) until it reaches 0 */
-    delay_timer: u8,
+    pub delay_timer: u8,
 
     /** Sound timer - 8-bit value which functions like the delay timer, but which also gives off a beeping sound as long as it’s not 0 */
-    sound_timer: u8,
+    pub sound_timer: u8,
 
     /** 16 8-bit registers, named V0 to VF. */
     /** VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag */
-    v: [u8; 16],
+    pub v: [u8; 16],
 
-    memory: [u8; 4096],
+    pub memory: [u8; 4096],
+    pub gfx: [bool; Screen::WIDTH * Screen::HEIGHT],
 }
-
 impl Processor {
     pub fn init() -> Processor {
         Processor {
-            memory: array_init(|_| 0),
             pc: ROM_BEGIN_INDEX as u16,
             i: 0,
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
             v: array_init(|_| 0),
+            memory: array_init(|_| 0),
+            gfx: array_init(|_| true),
         }
     }
 
@@ -63,14 +65,24 @@ impl Processor {
         // Fetch data
         let instruction = self.fetch();
         self.pc += 2;
-
         console::log_1(&format!("Instruction: {:#06X}", instruction).into());
-    }
-    fn fetch(&self) -> u16 {
-        let first_nibble = self.memory[self.pc as usize] as u16;
-        let second_nibble = self.memory[self.pc as usize + 1] as u16;
 
-        (first_nibble) << 0x8 | second_nibble
+        // Decode data
+        let (first, rest) = self.decode(instruction);
+        console::log_1(&format!("First: {:#X}, Rest: {:#05X}", first, rest).into());
+    }
+
+    fn fetch(&self) -> u16 {
+        let first_half = self.memory[self.pc as usize] as u16;
+        let second_half = self.memory[self.pc as usize + 1] as u16;
+
+        (first_half) << 0x8 | second_half
+    }
+    fn decode(&self, instruction: u16) -> (u16, u16) {
+        let first = (instruction & 0xF000) >> 0xC;
+        let rest = instruction & 0x0FFF;
+
+        (first, rest)
     }
 
     pub fn load_fonts(&mut self) {
@@ -87,27 +99,41 @@ impl Processor {
 
 #[cfg(test)]
 mod tests {
-    use crate::components::processor::Processor;
+    use super::Processor;
     use array_init::array_init;
     use wasm_bindgen_test::wasm_bindgen_test;
 
     #[wasm_bindgen_test]
     fn test_fetch() {
-        // Setup
+        // Arrange
         let mut memory: [u8; 4096] = array_init(|_| 0);
-        memory[0] = 0xab;
-        memory[1] = 0xcd;
+        memory[0] = 0xAB;
+        memory[1] = 0xCD;
         let pc: u16 = 0x0;
 
         let mut processor = Processor::init();
         processor.memory = memory;
         processor.pc = pc;
 
-        // Run
+        // Act
         let result = Processor::fetch(&processor);
 
         // Assert
-        let expected = 0xabcd;
-        assert_eq!(result, expected, "{:X} =/= {:X}", result, expected);
+        let expected = 0xABCD;
+        assert_eq!(result, expected, "{:#06X} =/= {:#06X}", result, expected);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_decode() {
+        // Arrange
+        let instruction: u16 = 0xABCD;
+        let processor = Processor::init();
+
+        // Act
+        let result = processor.decode(instruction);
+
+        // Assert
+        let expected: (u16, u16) = (0xA, 0xBCD);
+        assert_eq!(result, expected, "{:#06X?} =/= {:#06X?}", result, expected);
     }
 }

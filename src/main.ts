@@ -9,4 +9,4 @@ const canvas = document.querySelector("canvas")!;
 canvas.style.width = WIDTH * SCALE + "px";
 canvas.style.height = HEIGHT * SCALE + "px";
 
-emulator.start(WIDTH, HEIGHT);
+emulator.start();

@@ -4,14 +4,13 @@ use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
 #[derive(Debug)]
 pub struct Screen {
     display: CanvasRenderingContext2d,
-    display_width: u32,
-    display_height: u32,
 }
 impl Screen {
-    pub fn init(width: u32, height: u32) -> Screen {
+    pub const WIDTH: usize = 64;
+    pub const HEIGHT: usize = 32;
+
+    pub fn init() -> Screen {
         Screen {
-            display_width: width,
-            display_height: height,
             display: {
                 let document = window().unwrap().document().unwrap();
                 let canvas_html_element = document
@@ -22,8 +21,8 @@ impl Screen {
                     .dyn_into::<HtmlCanvasElement>()
                     .expect("Error casting canvas type!");
 
-                canvas.set_width(width);
-                canvas.set_height(height);
+                canvas.set_width(Self::WIDTH as u32);
+                canvas.set_height(Self::HEIGHT as u32);
 
                 canvas
                     .get_context("2d")
@@ -36,10 +35,10 @@ impl Screen {
     }
 
     pub fn test_display(&self) {
-        for x in 0..self.display_width {
-            for y in 0..self.display_height {
+        for x in 0..Self::WIDTH {
+            for y in 0..Self::HEIGHT {
                 let color = (x as f32) * (y as f32)
-                    / ((self.display_width - 1) as f32 * (self.display_height - 1) as f32)
+                    / ((Self::WIDTH - 1) as f32 * (Self::HEIGHT - 1) as f32)
                     * 255.0;
 
                 self.display

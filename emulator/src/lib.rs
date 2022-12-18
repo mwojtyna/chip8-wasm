@@ -3,7 +3,7 @@ mod components {
     pub mod screen;
 }
 
-use components::*;
+use crate::components::*;
 use fluvio_wasm_timer::Delay;
 use std::time::Duration;
 use wasm_bindgen::prelude::*;
@@ -17,10 +17,10 @@ struct Emulator {
     screen: screen::Screen,
 }
 impl Emulator {
-    pub fn init(width: u32, height: u32) -> Emulator {
+    pub fn init() -> Emulator {
         Emulator {
             processor: processor::Processor::init(),
-            screen: screen::Screen::init(width, height),
+            screen: screen::Screen::init(),
         }
     }
 
@@ -35,10 +35,10 @@ impl Emulator {
 }
 
 #[wasm_bindgen]
-pub fn start(width: u32, height: u32) {
+pub fn start() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    let mut emulator = Emulator::init(width, height);
+    let mut emulator = Emulator::init();
     emulator.screen.test_display();
     emulator.processor.load_fonts();
     emulator
