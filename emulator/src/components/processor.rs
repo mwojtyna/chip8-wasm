@@ -1,5 +1,7 @@
+use super::opcodes::*;
 use super::screen::Screen;
 use array_init::array_init;
+use wasm_bindgen::convert::IntoWasmAbi;
 use web_sys::*;
 
 const FONT_SET: [u8; 80] = [
@@ -67,9 +69,12 @@ impl Processor {
         self.pc += 2;
         console::log_1(&format!("Instruction: {:#06X}", instruction).into());
 
-        // Decode data
+        // Decode instruction
         let (first, rest) = self.decode(instruction);
         console::log_1(&format!("First: {:#X}, Rest: {:#05X}", first, rest).into());
+
+        // Execute instruction
+        self.execute(first, rest);
     }
 
     fn fetch(&self) -> u16 {
@@ -83,6 +88,33 @@ impl Processor {
         let rest = instruction & 0x0FFF;
 
         (first, rest)
+    }
+    fn execute(&mut self, first: u16, rest: u16) -> Result<(), Box<dyn std::error::Error>> {
+        let msg = format!("Opcode {:#06X} not recognized!", first << 0xC | rest);
+        let on_not_found = || {
+            console::warn_1(&msg.clone().into());
+        };
+        let mut not_found = false;
+
+        match first {
+            0x0 => match rest {
+                0x0E0 => OpCode00E0::execute(self),
+                _ => {
+                    on_not_found();
+                    not_found = true;
+                }
+            },
+            _ => {
+                on_not_found();
+                not_found = true;
+            }
+        }
+
+        if not_found {
+            Err(msg.into())
+        } else {
+            Ok(())
+        }
     }
 
     pub fn load_fonts(&mut self) {
@@ -135,5 +167,33 @@ mod tests {
         // Assert
         let expected: (u16, u16) = (0xA, 0xBCD);
         assert_eq!(result, expected, "{:#06X?} =/= {:#06X?}", result, expected);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_execute_normal() {
+        // Arrange
+        let first = 0x0;
+        let rest = 0x0E0;
+        let mut processor = Processor::init();
+
+        // Act
+        let _ = processor.execute(first, rest);
+
+        // Assert
+        assert_eq!(processor.gfx, array_init(|_| false));
+    }
+
+    #[wasm_bindgen_test]
+    fn test_execute_not_implemented() {
+        // Arrange
+        let first = 0xF;
+        let rest = 0xFFF;
+        let mut processor = Processor::init();
+
+        // Act
+        let result = processor.execute(first, rest);
+
+        // Assert
+        assert!(result.is_err());
     }
 }

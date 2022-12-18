@@ -1,4 +1,5 @@
 mod components {
+    pub mod opcodes;
     pub mod processor;
     pub mod screen;
 }
