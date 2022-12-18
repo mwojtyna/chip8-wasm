@@ -3,6 +3,13 @@ use super::screen::Screen;
 use array_init::array_init;
 use log::*;
 
+pub struct OpCode00E0 {}
+pub struct OpCode1NNN {}
+pub struct OpCode6XNN {}
+pub struct OpCode7XNN {}
+pub struct OpCodeANNN {}
+pub struct OpCodeDXYN {}
+
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
 }
@@ -49,6 +56,7 @@ impl OpCode for OpCodeDXYN {
         let sprite_y = processor.v[y] as usize;
         let height = n as usize;
         let width = 8;
+        let mut flipped = false;
 
         for row in 0..height {
             let sprite = processor.memory[processor.i as usize + row];
@@ -59,25 +67,24 @@ impl OpCode for OpCodeDXYN {
                 let gfx_i = (sprite_y + row) * Screen::WIDTH + (sprite_x + col);
 
                 let prev_gfx = processor.gfx[gfx_i];
+                debug!(
+                    "    screen {} XOR sprite {} = {}",
+                    processor.gfx[gfx_i],
+                    sprite_bit == 1,
+                    processor.gfx[gfx_i] ^ (sprite_bit == 1)
+                );
                 processor.gfx[gfx_i] ^= sprite_bit == 1;
 
                 if prev_gfx && !processor.gfx[gfx_i] {
-                    processor.v[0xF] = 1;
-                    debug!("Pixel flipped from set to unset!");
-                } else {
-                    processor.v[0xF] = 0;
+                    flipped = true;
                 }
             }
         }
+
+        processor.v[0xF] = flipped as u8;
+        debug!("Flipped: {}", flipped);
     }
 }
-
-pub struct OpCode00E0 {}
-pub struct OpCode1NNN {}
-pub struct OpCode6XNN {}
-pub struct OpCode7XNN {}
-pub struct OpCodeANNN {}
-pub struct OpCodeDXYN {}
 
 #[allow(non_snake_case)]
 mod tests {
@@ -154,5 +161,58 @@ mod tests {
     }
 
     #[wasm_bindgen_test]
-    fn test_DXYNN() {}
+    fn test_DXYN_no_flip() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        let n = 0x3;
+        let sprite_x = 0x1;
+        let sprite_y = 0x2;
+        let gfx_start = sprite_y as usize * Screen::WIDTH + sprite_x as usize;
+
+        processor.v[x as usize] = sprite_x;
+        processor.v[y as usize] = sprite_y;
+        processor.i = 0x200;
+        processor.memory[processor.i as usize] = 0b01000001;
+
+        // Act
+        OpCodeDXYN::execute(&mut processor, &[x, y, n]);
+
+        // Assert
+        assert_eq!(
+            processor.gfx[gfx_start..gfx_start + 8],
+            [false, true, false, false, false, false, false, true],
+            "processor.gfx set incorrectly!"
+        );
+        assert_eq!(processor.v[0xF], 0x0, "VF set incorrectly!");
+    }
+    #[wasm_bindgen_test]
+    fn test_DXYN_flip() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        let n = 0x3;
+        let sprite_x = 0x1;
+        let sprite_y = 0x2;
+        let gfx_start = sprite_y as usize * Screen::WIDTH + sprite_x as usize;
+
+        processor.v[x as usize] = sprite_x;
+        processor.v[y as usize] = sprite_y;
+        processor.i = 0x200;
+        processor.memory[processor.i as usize] = 0b01000001;
+        processor.gfx = array_init(|_| true);
+
+        // Act
+        OpCodeDXYN::execute(&mut processor, &[x, y, n]);
+
+        // Assert
+        assert_eq!(
+            processor.gfx[gfx_start..gfx_start + 8],
+            [true, false, true, true, true, true, true, false],
+            "processor.gfx set incorrectly!"
+        );
+        assert_eq!(processor.v[0xF], 0x1, "VF set incorrectly!");
+    }
 }
