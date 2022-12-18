@@ -18,19 +18,24 @@ struct Emulator {
     screen: screen::Screen,
 }
 impl Emulator {
+    const INSTRUCTIONS_PER_SECOND: usize = 10;
+
     pub fn init() -> Emulator {
         Emulator {
             processor: processor::Processor::init(),
             screen: screen::Screen::init(),
         }
     }
-
     pub async fn start(&mut self) {
         loop {
             self.processor.cycle();
-            Delay::new(Duration::from_secs_f32(1.0))
-                .await
-                .expect("Error waiting for delay!");
+            self.screen.update(&self.processor.gfx);
+
+            Delay::new(Duration::from_secs_f32(
+                1.0 / Self::INSTRUCTIONS_PER_SECOND as f32,
+            ))
+            .await
+            .expect("Error waiting for delay!");
         }
     }
 }
@@ -40,7 +45,6 @@ pub fn start() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     let mut emulator = Emulator::init();
-    emulator.screen.test_display();
     emulator.processor.load_fonts();
     emulator
         .processor

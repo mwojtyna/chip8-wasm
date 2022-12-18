@@ -1,4 +1,6 @@
 use super::processor::Processor;
+use super::screen::Screen;
+use web_sys::console;
 
 pub trait OpCode {
     fn execute(processor: &mut Processor);
@@ -41,12 +43,39 @@ impl OpCodeWithData for OpCodeANNN {
         processor.i = data[0];
     }
 }
+impl OpCodeWithData for OpCodeDXYN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let y = data[1] as usize;
+        let n = data[2];
+
+        let sprite_x = processor.v[x] as usize;
+        let sprite_y = processor.v[y] as usize;
+        let height = n as usize;
+        let width = 8;
+
+        for row in 0..height {
+            let sprite = processor.memory[processor.i as usize + row];
+            console::info_1(&format!("Sprite: {:#010b}", sprite).into());
+
+            for col in 0..width {
+                let sprite_bit = (sprite >> (width - 1 - col)) & 0x1;
+
+                if sprite_bit == 1 {
+                    let index = (sprite_y + row) * Screen::WIDTH + (sprite_x + col);
+                    processor.gfx[index] = true;
+                }
+            }
+        }
+    }
+}
 
 pub struct OpCode00E0 {}
 pub struct OpCode1NNN {}
 pub struct OpCode6XNN {}
 pub struct OpCode7XNN {}
 pub struct OpCodeANNN {}
+pub struct OpCodeDXYN {}
 
 #[allow(non_snake_case)]
 mod tests {

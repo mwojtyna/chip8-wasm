@@ -1,29 +1,7 @@
 use super::opcodes::*;
 use super::screen::Screen;
 use array_init::array_init;
-use wasm_bindgen::convert::IntoWasmAbi;
 use web_sys::*;
-
-const FONT_SET: [u8; 80] = [
-    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-    0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-    0xF0, 0x80, 0xF0, 0x80, 0x80, // F
-];
-const FONT_BEGIN_INDEX: usize = 0x50;
-const ROM_BEGIN_INDEX: usize = 0x200;
 
 #[derive(Debug)]
 pub struct Processor {
@@ -50,16 +28,37 @@ pub struct Processor {
     pub gfx: [bool; Screen::WIDTH * Screen::HEIGHT],
 }
 impl Processor {
+    const FONT_SET: [u8; 80] = [
+        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+        0x20, 0x60, 0x20, 0x20, 0x70, // 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+        0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+    ];
+    const FONT_BEGIN_INDEX: usize = 0x50;
+    const ROM_BEGIN_INDEX: usize = 0x200;
+
     pub fn init() -> Processor {
         Processor {
-            pc: ROM_BEGIN_INDEX as u16,
+            pc: Self::ROM_BEGIN_INDEX as u16,
             i: 0,
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
             v: array_init(|_| 0),
             memory: array_init(|_| 0),
-            gfx: array_init(|_| true),
+            gfx: array_init(|_| false),
         }
     }
 
@@ -131,6 +130,20 @@ impl Processor {
 
                 console::log_1(&format!("Set I to {:#06X} -> {:#06X}", rest, self.i).into());
             }
+            0xD => {
+                let x = (rest & 0xF00) >> 0x8;
+                let y = (rest & 0x0F0) >> 0x4;
+                let n = rest & 0x00F;
+                OpCodeDXYN::execute(self, &[x, y, n]);
+
+                console::log_1(
+                    &format!(
+                        "Draw sprite at {}:{} with height {}",
+                        self.v[x as usize], self.v[y as usize], n
+                    )
+                    .into(),
+                );
+            }
             _ => {
                 not_found = true;
             }
@@ -144,13 +157,13 @@ impl Processor {
     }
 
     pub fn load_fonts(&mut self) {
-        for (i, font) in FONT_SET.iter().enumerate() {
-            self.memory[i + FONT_BEGIN_INDEX] = *font;
+        for (i, font) in Self::FONT_SET.iter().enumerate() {
+            self.memory[i + Self::FONT_BEGIN_INDEX] = *font;
         }
     }
     pub fn load_rom(&mut self, rom: Vec<u8>) {
         for (i, value) in rom.iter().enumerate() {
-            self.memory[ROM_BEGIN_INDEX + i] = *value;
+            self.memory[Self::ROM_BEGIN_INDEX + i] = *value;
         }
     }
 }
