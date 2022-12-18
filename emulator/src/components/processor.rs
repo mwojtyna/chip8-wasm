@@ -101,6 +101,9 @@ impl Processor {
                     not_found = true;
                 }
             },
+            0x1 => {
+                OpCode1NNN::execute(self, rest);
+            }
             _ => {
                 not_found = true;
             }
