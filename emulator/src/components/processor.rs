@@ -64,6 +64,8 @@ impl Processor {
     }
 
     pub fn cycle(&mut self) {
+        console::log_1(&"==========================".into());
+
         // Fetch data
         let instruction = self.fetch();
         self.pc += 2;
@@ -102,7 +104,18 @@ impl Processor {
                 }
             },
             0x1 => {
-                OpCode1NNN::execute(self, rest);
+                OpCode1NNN::execute(self, &[rest]);
+
+                console::log_1(&format!("Jump to {:#06X} -> {:#06X}", rest, self.pc).into());
+            }
+            0x6 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let nn = rest & 0x0FF;
+                OpCode6XNN::execute(self, &[x, nn]);
+
+                console::log_1(
+                    &format!("Set V{} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]).into(),
+                );
             }
             _ => {
                 not_found = true;

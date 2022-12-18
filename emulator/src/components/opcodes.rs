@@ -4,7 +4,7 @@ pub trait OpCode {
     fn execute(processor: &mut Processor);
 }
 pub trait OpCodeWithData {
-    fn execute(processor: &mut Processor, data: u16);
+    fn execute(processor: &mut Processor, data: &[u16]);
 }
 
 impl OpCode for OpCode00E0 {
@@ -15,13 +15,21 @@ impl OpCode for OpCode00E0 {
     }
 }
 impl OpCodeWithData for OpCode1NNN {
-    fn execute(processor: &mut Processor, data: u16) {
-        processor.pc = data;
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        processor.pc = data[0];
+    }
+}
+impl OpCodeWithData for OpCode6XNN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let nn = data[1] as u8;
+        processor.v[x] = nn;
     }
 }
 
 pub struct OpCode00E0 {}
 pub struct OpCode1NNN {}
+pub struct OpCode6XNN {}
 
 #[allow(non_snake_case)]
 mod tests {
@@ -49,9 +57,23 @@ mod tests {
         let jump_to = 0x123;
 
         // Act
-        OpCode1NNN::execute(&mut processor, jump_to);
+        OpCode1NNN::execute(&mut processor, &[jump_to]);
 
         // Assert
         assert_eq!(processor.pc, jump_to);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_6XNN() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let nn = 0x23;
+
+        // Act
+        OpCode6XNN::execute(&mut processor, &[x, nn]);
+
+        // Assert
+        assert_eq!(processor.v[x as usize] as u16, nn);
     }
 }
