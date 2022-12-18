@@ -1,3 +1,4 @@
+use super::memory::Memory;
 use super::opcodes::*;
 use super::screen::Screen;
 use array_init::array_init;
@@ -24,40 +25,19 @@ pub struct Processor {
     /** VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag */
     pub v: [u8; 16],
 
-    pub memory: [u8; 4096],
+    pub memory: Memory,
     pub gfx: [bool; Screen::WIDTH * Screen::HEIGHT],
 }
 impl Processor {
-    const FONT_SET: [u8; 80] = [
-        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-        0x20, 0x60, 0x20, 0x20, 0x70, // 1
-        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-        0xF0, 0x80, 0xF0, 0x80, 0x80, // F
-    ];
-    const FONT_BEGIN_INDEX: usize = 0x50;
-    const ROM_BEGIN_INDEX: usize = 0x200;
-
     pub fn init() -> Processor {
         Processor {
-            pc: Self::ROM_BEGIN_INDEX as u16,
+            pc: Memory::ROM_BEGIN_INDEX as u16,
             i: 0,
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
             v: array_init(|_| 0),
-            memory: array_init(|_| 0),
+            memory: Memory::init(),
             gfx: array_init(|_| false),
         }
     }
@@ -80,8 +60,8 @@ impl Processor {
     }
 
     fn fetch(&self) -> u16 {
-        let first_half = self.memory[self.pc as usize] as u16;
-        let second_half = self.memory[self.pc as usize + 1] as u16;
+        let first_half = self.memory.data[self.pc as usize] as u16;
+        let second_half = self.memory.data[self.pc as usize + 1] as u16;
 
         (first_half) << 0x8 | second_half
     }
@@ -151,21 +131,11 @@ impl Processor {
             Ok(())
         }
     }
-
-    pub fn load_fonts(&mut self) {
-        for (i, font) in Self::FONT_SET.iter().enumerate() {
-            self.memory[i + Self::FONT_BEGIN_INDEX] = *font;
-        }
-    }
-    pub fn load_rom(&mut self, rom: Vec<u8>) {
-        for (i, value) in rom.iter().enumerate() {
-            self.memory[Self::ROM_BEGIN_INDEX + i] = *value;
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
+
     use super::Processor;
     use array_init::array_init;
     use wasm_bindgen_test::wasm_bindgen_test;
@@ -179,7 +149,7 @@ mod tests {
         let pc: u16 = 0x0;
 
         let mut processor = Processor::init();
-        processor.memory = memory;
+        processor.memory.data = memory;
         processor.pc = pc;
 
         // Act
@@ -229,37 +199,5 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-    }
-
-    #[wasm_bindgen_test]
-    fn test_load_fonts() {
-        // Arrange
-        let mut processor = Processor::init();
-
-        // Act
-        processor.load_fonts();
-
-        // Assert
-        assert_eq!(
-            processor.memory[Processor::FONT_BEGIN_INDEX
-                ..(Processor::FONT_BEGIN_INDEX + Processor::FONT_SET.len())],
-            Processor::FONT_SET
-        );
-    }
-
-    #[wasm_bindgen_test]
-    fn test_load_rom() {
-        // Arrange
-        let mut processor = Processor::init();
-        let rom = vec![0xAB, 0xCD];
-
-        // Act
-        processor.load_rom(rom.clone());
-
-        // Assert
-        assert_eq!(
-            processor.memory[Processor::ROM_BEGIN_INDEX..(Processor::ROM_BEGIN_INDEX + rom.len())],
-            rom
-        );
     }
 }

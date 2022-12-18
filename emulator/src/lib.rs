@@ -1,4 +1,5 @@
 mod components {
+    pub mod memory;
     pub mod opcodes;
     pub mod processor;
     pub mod screen;
@@ -46,9 +47,10 @@ pub fn start() {
     console_log::init_with_level(Level::Debug).expect("Failed initializing logger!");
 
     let mut emulator = Emulator::init();
-    emulator.processor.load_fonts();
+    emulator.processor.memory.load_fonts();
     emulator
         .processor
+        .memory
         .load_rom(include_bytes!("roms/ibm-logo.ch8").to_vec());
 
     debug!("{:#x?}", emulator.processor);

@@ -59,7 +59,7 @@ impl OpCode for OpCodeDXYN {
         let mut flipped = false;
 
         for row in 0..height {
-            let sprite = processor.memory[processor.i as usize + row];
+            let sprite = processor.memory.data[processor.i as usize + row];
             debug!("Row {:#02}: {:#010b}", row, sprite);
 
             for col in 0..width {
@@ -168,7 +168,7 @@ mod tests {
         processor.v[x as usize] = sprite_x;
         processor.v[y as usize] = sprite_y;
         processor.i = 0x200;
-        processor.memory[processor.i as usize] = 0b01000001;
+        processor.memory.data[processor.i as usize] = 0b01000001;
 
         // Act
         OpCodeDXYN::execute(&mut processor, &[x, y, n]);
@@ -195,7 +195,7 @@ mod tests {
         processor.v[x as usize] = sprite_x;
         processor.v[y as usize] = sprite_y;
         processor.i = 0x200;
-        processor.memory[processor.i as usize] = 0b01000001;
+        processor.memory.data[processor.i as usize] = 0b01000001;
         processor.gfx = array_init(|_| true);
 
         // Act
