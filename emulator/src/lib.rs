@@ -9,7 +9,7 @@ use fluvio_wasm_timer::Delay;
 use std::time::Duration;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::console;
+use wasm_bindgen_test::console_log;
 
 extern crate console_error_panic_hook;
 
@@ -50,8 +50,8 @@ pub fn start() {
         .processor
         .load_rom(include_bytes!("roms/ibm-logo.ch8").to_vec());
 
-    console::log_1(&format!("{:#x?}", emulator.processor).into());
-    console::log_1(&format!("{:?}", emulator.screen).into());
+    console_log!("{:#x?}", emulator.processor);
+    console_log!("{:?}", emulator.screen);
 
     spawn_local(async move { emulator.start().await });
 }

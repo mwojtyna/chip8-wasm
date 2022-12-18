@@ -1,6 +1,6 @@
 use super::processor::Processor;
 use super::screen::Screen;
-use web_sys::console;
+use wasm_bindgen_test::console_log;
 
 pub trait OpCode {
     fn execute(processor: &mut Processor);
@@ -56,7 +56,7 @@ impl OpCodeWithData for OpCodeDXYN {
 
         for row in 0..height {
             let sprite = processor.memory[processor.i as usize + row];
-            console::info_1(&format!("Sprite: {:#010b}", sprite).into());
+            console_log!("Row {}: {:#010b}", row, sprite);
 
             for col in 0..width {
                 let sprite_bit = (sprite >> (width - 1 - col)) & 0x1;

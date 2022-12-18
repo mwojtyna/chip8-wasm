@@ -1,6 +1,7 @@
 use super::opcodes::*;
 use super::screen::Screen;
 use array_init::array_init;
+use wasm_bindgen_test::console_log;
 use web_sys::*;
 
 #[derive(Debug)]
@@ -63,16 +64,15 @@ impl Processor {
     }
 
     pub fn cycle(&mut self) {
-        console::log_1(&"==========================".into());
+        console_log!("==========================");
 
         // Fetch data
         let instruction = self.fetch();
         self.pc += 2;
-        console::log_1(&format!("Instruction: {:#06X}", instruction).into());
+        console_log!("Instruction: {:#06X}", instruction);
 
         // Decode instruction
         let (first, rest) = self.decode(instruction);
-        console::log_1(&format!("First: {:#X}, Rest: {:#05X}", first, rest).into());
 
         // Execute instruction
         self.execute(first, rest).unwrap_or_else(|err| {
@@ -97,7 +97,11 @@ impl Processor {
 
         match first {
             0x0 => match rest {
-                0x0E0 => OpCode00E0::execute(self),
+                0x0E0 => {
+                    OpCode00E0::execute(self);
+
+                    console_log!("Clear screen");
+                }
                 _ => {
                     not_found = true;
                 }
@@ -105,30 +109,26 @@ impl Processor {
             0x1 => {
                 OpCode1NNN::execute(self, &[rest]);
 
-                console::log_1(&format!("Jump to {:#06X} -> {:#06X}", rest, self.pc).into());
+                console_log!("Jump to {:#06X} -> {:#06X}", rest, self.pc);
             }
             0x6 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let nn = rest & 0x0FF;
                 OpCode6XNN::execute(self, &[x, nn]);
 
-                console::log_1(
-                    &format!("Set V{} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]).into(),
-                );
+                console_log!("Set V{} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]);
             }
             0x7 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let nn = rest & 0x0FF;
                 OpCode7XNN::execute(self, &[x, nn]);
 
-                console::log_1(
-                    &format!("Add {:#06X} to V{} -> {:#06X}", nn, x, self.v[x as usize]).into(),
-                );
+                console_log!("Add {:#06X} to V{} -> {:#06X}", nn, x, self.v[x as usize]);
             }
             0xA => {
                 OpCodeANNN::execute(self, &[rest]);
 
-                console::log_1(&format!("Set I to {:#06X} -> {:#06X}", rest, self.i).into());
+                console_log!("Set I to {:#06X} -> {:#06X}", rest, self.i);
             }
             0xD => {
                 let x = (rest & 0xF00) >> 0x8;
@@ -136,12 +136,11 @@ impl Processor {
                 let n = rest & 0x00F;
                 OpCodeDXYN::execute(self, &[x, y, n]);
 
-                console::log_1(
-                    &format!(
-                        "Draw sprite at {}:{} with height {}",
-                        self.v[x as usize], self.v[y as usize], n
-                    )
-                    .into(),
+                console_log!(
+                    "Draw sprite at {}:{} with height {}",
+                    self.v[x as usize],
+                    self.v[y as usize],
+                    n
                 );
             }
             _ => {
