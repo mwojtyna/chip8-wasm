@@ -6,10 +6,10 @@ mod components {
 
 use crate::components::*;
 use fluvio_wasm_timer::Delay;
+use log::*;
 use std::time::Duration;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use wasm_bindgen_test::console_log;
 
 extern crate console_error_panic_hook;
 
@@ -43,6 +43,7 @@ impl Emulator {
 #[wasm_bindgen]
 pub fn start() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+    console_log::init_with_level(Level::Debug).expect("Failed initializing logger!");
 
     let mut emulator = Emulator::init();
     emulator.processor.load_fonts();
@@ -50,8 +51,8 @@ pub fn start() {
         .processor
         .load_rom(include_bytes!("roms/ibm-logo.ch8").to_vec());
 
-    console_log!("{:#x?}", emulator.processor);
-    console_log!("{:?}", emulator.screen);
+    debug!("{:#x?}", emulator.processor);
+    debug!("{:?}", emulator.screen);
 
     spawn_local(async move { emulator.start().await });
 }
