@@ -60,19 +60,13 @@ impl OpCode for OpCodeDXYN {
 
         for row in 0..height {
             let sprite = processor.memory[processor.i as usize + row];
-            debug!("Row {}: {:#010b}", row, sprite);
+            debug!("Row {:#02}: {:#010b}", row, sprite);
 
             for col in 0..width {
                 let sprite_bit = (sprite >> (width - 1 - col)) & 0x1;
                 let gfx_i = (sprite_y + row) * Screen::WIDTH + (sprite_x + col);
 
                 let prev_gfx = processor.gfx[gfx_i];
-                debug!(
-                    "    screen {} XOR sprite {} = {}",
-                    processor.gfx[gfx_i],
-                    sprite_bit == 1,
-                    processor.gfx[gfx_i] ^ (sprite_bit == 1)
-                );
                 processor.gfx[gfx_i] ^= sprite_bit == 1;
 
                 if prev_gfx && !processor.gfx[gfx_i] {
