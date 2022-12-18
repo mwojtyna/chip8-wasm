@@ -36,11 +36,17 @@ impl OpCodeWithData for OpCode7XNN {
             .expect(&format!("Overflow on V{}!", x));
     }
 }
+impl OpCodeWithData for OpCodeANNN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        processor.i = data[0];
+    }
+}
 
 pub struct OpCode00E0 {}
 pub struct OpCode1NNN {}
 pub struct OpCode6XNN {}
 pub struct OpCode7XNN {}
+pub struct OpCodeANNN {}
 
 #[allow(non_snake_case)]
 mod tests {
@@ -101,5 +107,18 @@ mod tests {
 
         // Assert
         assert_eq!(processor.v[x as usize] as u16, x + nn);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_ANNN() {
+        // Arrange
+        let mut processor = Processor::init();
+        let nnn = 0x123;
+
+        // Act
+        OpCodeANNN::execute(&mut processor, &[nnn]);
+
+        // Assert
+        assert_eq!(processor.i, nnn);
     }
 }

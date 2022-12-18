@@ -126,6 +126,11 @@ impl Processor {
                     &format!("Add {:#06X} to V{} -> {:#06X}", nn, x, self.v[x as usize]).into(),
                 );
             }
+            0xA => {
+                OpCodeANNN::execute(self, &[rest]);
+
+                console::log_1(&format!("Set I to {:#06X} -> {:#06X}", rest, self.i).into());
+            }
             _ => {
                 not_found = true;
             }
