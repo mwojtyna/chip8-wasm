@@ -4,6 +4,7 @@ use array_init::array_init;
 use log::*;
 
 pub struct OpCode00E0 {}
+pub struct OpCode00EE {}
 pub struct OpCode1NNN {}
 pub struct OpCode2NNN {}
 pub struct OpCode3XNN {}
@@ -19,6 +20,12 @@ pub trait OpCode {
 impl OpCode for OpCode00E0 {
     fn execute(processor: &mut Processor, _: &[u16]) {
         processor.gfx = array_init(|_| false);
+    }
+}
+impl OpCode for OpCode00EE {
+    fn execute(processor: &mut Processor, _: &[u16]) {
+        let return_address = processor.stack.pop().expect("Stack is empty!");
+        processor.pc = return_address;
     }
 }
 impl OpCode for OpCode1NNN {
@@ -115,6 +122,25 @@ mod tests {
 
         // Assert
         assert_eq!(processor.gfx, array_init(|_| false));
+    }
+
+    #[wasm_bindgen_test]
+    fn test_00EE() {
+        // Arrange
+        let mut processor = Processor::init();
+        let return_address = 0x201;
+        processor.pc = 0x200;
+        processor.stack.push(return_address);
+
+        // Act
+        OpCode00EE::execute(&mut processor, &[]);
+
+        // Assert
+        assert_eq!(
+            processor.pc, return_address,
+            "PC not equal to return address!"
+        );
+        assert!(processor.stack.is_empty(), "Stack not popped!");
     }
 
     #[wasm_bindgen_test]

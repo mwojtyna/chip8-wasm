@@ -81,6 +81,11 @@ impl Processor {
 
                     debug!("Clear screen");
                 }
+                0x0EE => {
+                    OpCode00EE::execute(self, &[]);
+
+                    debug!("Return from subroutine");
+                }
                 _ => {
                     not_found = true;
                 }
