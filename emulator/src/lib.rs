@@ -19,7 +19,7 @@ struct Emulator {
     screen: screen::Screen,
 }
 impl Emulator {
-    const INSTRUCTIONS_PER_SECOND: usize = 10;
+    const INSTRUCTIONS_PER_SECOND: usize = 100;
 
     pub fn init() -> Emulator {
         Emulator {

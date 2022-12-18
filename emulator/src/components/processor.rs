@@ -90,13 +90,21 @@ impl Processor {
 
                 debug!("Jump to {:#06X} -> {:#06X}", rest, self.pc);
             }
+            0x2 => {
+                OpCode2NNN::execute(self, &[rest]);
+
+                debug!(
+                    "Call subroutine at {:#06X} -> stack[0]={:#06X}",
+                    rest, self.stack[0]
+                );
+            }
             0x3 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let nn = rest & 0x0FF;
                 OpCode3XNN::execute(self, &[x, nn]);
 
                 debug!(
-                    "Skip next instruction if V{:#X} ({:#06X}) == {:#06X}",
+                    "Skip next instruction if V{:X} ({:#06X}) == {:#06X}",
                     x, self.v[x as usize], nn
                 );
             }
@@ -105,14 +113,14 @@ impl Processor {
                 let nn = rest & 0x0FF;
                 OpCode6XNN::execute(self, &[x, nn]);
 
-                debug!("Set V{} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]);
+                debug!("Set V{:X} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]);
             }
             0x7 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let nn = rest & 0x0FF;
                 OpCode7XNN::execute(self, &[x, nn]);
 
-                debug!("Add {:#06X} to V{} -> {:#06X}", nn, x, self.v[x as usize]);
+                debug!("Add {:#06X} to V{:X} -> {:#06X}", nn, x, self.v[x as usize]);
             }
             0xA => {
                 OpCodeANNN::execute(self, &[rest]);

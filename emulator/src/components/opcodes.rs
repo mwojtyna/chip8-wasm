@@ -5,6 +5,7 @@ use log::*;
 
 pub struct OpCode00E0 {}
 pub struct OpCode1NNN {}
+pub struct OpCode2NNN {}
 pub struct OpCode3XNN {}
 pub struct OpCode6XNN {}
 pub struct OpCode7XNN {}
@@ -23,6 +24,13 @@ impl OpCode for OpCode00E0 {
 impl OpCode for OpCode1NNN {
     fn execute(processor: &mut Processor, data: &[u16]) {
         processor.pc = data[0];
+    }
+}
+impl OpCode for OpCode2NNN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let nnn = data[0];
+        processor.stack.push(processor.pc);
+        processor.pc = nnn;
     }
 }
 impl OpCode for OpCode3XNN {
@@ -120,6 +128,21 @@ mod tests {
 
         // Assert
         assert_eq!(processor.pc, jump_to);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_2NNN() {
+        // Arrange
+        let mut processor = Processor::init();
+        let initial_pc = 0x200;
+        let nnn = 0x123;
+
+        // Act
+        OpCode2NNN::execute(&mut processor, &[nnn]);
+
+        // Assert
+        assert_eq!(processor.stack[0], initial_pc, "PC not added to stack!");
+        assert_eq!(processor.pc, nnn, "PC not set to {:#06X}", nnn);
     }
 
     #[wasm_bindgen_test]
