@@ -97,7 +97,7 @@ impl Processor {
         match first {
             0x0 => match rest {
                 0x0E0 => {
-                    OpCode00E0::execute(self);
+                    OpCode00E0::execute(self, &[]);
 
                     debug!("Clear screen");
                 }
