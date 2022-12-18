@@ -217,7 +217,6 @@ mod tests {
         // Assert
         assert!(result.is_ok());
     }
-
     #[wasm_bindgen_test]
     fn test_execute_not_implemented() {
         // Arrange
@@ -230,5 +229,37 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn test_load_fonts() {
+        // Arrange
+        let mut processor = Processor::init();
+
+        // Act
+        processor.load_fonts();
+
+        // Assert
+        assert_eq!(
+            processor.memory[Processor::FONT_BEGIN_INDEX
+                ..(Processor::FONT_BEGIN_INDEX + Processor::FONT_SET.len())],
+            Processor::FONT_SET
+        );
+    }
+
+    #[wasm_bindgen_test]
+    fn test_load_rom() {
+        // Arrange
+        let mut processor = Processor::init();
+        let rom = vec![0xAB, 0xCD];
+
+        // Act
+        processor.load_rom(rom.clone());
+
+        // Assert
+        assert_eq!(
+            processor.memory[Processor::ROM_BEGIN_INDEX..(Processor::ROM_BEGIN_INDEX + rom.len())],
+            rom
+        );
     }
 }
