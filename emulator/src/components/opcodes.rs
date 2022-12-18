@@ -108,8 +108,8 @@ impl OpCode for OpCodeDXYN {
         let y = data[1] as usize;
         let n = data[2];
 
-        let sprite_x = processor.v[x] as usize;
-        let sprite_y = processor.v[y] as usize;
+        let sprite_x = processor.v[x] as usize % Screen::WIDTH;
+        let sprite_y = processor.v[y] as usize % Screen::HEIGHT;
         let height = n as usize;
         let width = 8;
         let mut flipped = false;
