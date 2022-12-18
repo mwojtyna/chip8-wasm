@@ -176,10 +176,10 @@ mod tests {
         let mut processor = Processor::init();
 
         // Act
-        let _ = processor.execute(first, rest);
+        let result = processor.execute(first, rest);
 
         // Assert
-        assert_eq!(processor.gfx, array_init(|_| false));
+        assert!(result.is_ok());
     }
 
     #[wasm_bindgen_test]
