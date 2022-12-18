@@ -8,8 +8,11 @@ pub struct OpCode00EE {}
 pub struct OpCode1NNN {}
 pub struct OpCode2NNN {}
 pub struct OpCode3XNN {}
+pub struct OpCode4XNN {}
+pub struct OpCode5XY0 {}
 pub struct OpCode6XNN {}
 pub struct OpCode7XNN {}
+pub struct OpCode9XY0 {}
 pub struct OpCodeANNN {}
 pub struct OpCodeDXYN {}
 
@@ -50,6 +53,26 @@ impl OpCode for OpCode3XNN {
         }
     }
 }
+impl OpCode for OpCode4XNN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let nn = data[1] as u8;
+
+        if processor.v[x] != nn {
+            processor.pc += 2;
+        }
+    }
+}
+impl OpCode for OpCode5XY0 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let y = data[1] as usize;
+
+        if processor.v[x] == processor.v[y] {
+            processor.pc += 2;
+        }
+    }
+}
 impl OpCode for OpCode6XNN {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
@@ -62,6 +85,16 @@ impl OpCode for OpCode7XNN {
         let x = data[0] as usize;
         let nn = data[1] as u8;
         processor.v[x] = processor.v[x].wrapping_add(nn)
+    }
+}
+impl OpCode for OpCode9XY0 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let y = data[1] as usize;
+
+        if processor.v[x] != processor.v[y] {
+            processor.pc += 2;
+        }
     }
 }
 impl OpCode for OpCodeANNN {
@@ -160,14 +193,17 @@ mod tests {
     fn test_2NNN() {
         // Arrange
         let mut processor = Processor::init();
-        let initial_pc = 0x200;
         let nnn = 0x123;
 
         // Act
         OpCode2NNN::execute(&mut processor, &[nnn]);
 
         // Assert
-        assert_eq!(processor.stack[0], initial_pc, "PC not added to stack!");
+        assert_eq!(
+            processor.stack[0],
+            Memory::ROM_BEGIN_INDEX as u16,
+            "PC not added to stack!"
+        );
         assert_eq!(processor.pc, nnn, "PC not set to {:#06X}", nnn);
     }
 
@@ -181,6 +217,37 @@ mod tests {
 
         // Act
         OpCode3XNN::execute(&mut processor, &[x, nn as u16]);
+
+        // Assert
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_4XNN() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let nn = 0x23;
+        processor.v[x as usize] = 0x0;
+
+        // Act
+        OpCode4XNN::execute(&mut processor, &[x, nn as u16]);
+
+        // Assert
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_5XY0() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[x as usize] = 0x23;
+        processor.v[y as usize] = 0x23;
+
+        // Act
+        OpCode5XY0::execute(&mut processor, &[x, y]);
 
         // Assert
         assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
@@ -213,6 +280,22 @@ mod tests {
 
         // Assert
         assert_eq!(processor.v[x as usize] as u16, x + nn);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_9XY0() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[x as usize] = 0x23;
+        processor.v[y as usize] = 0x24;
+
+        // Act
+        OpCode9XY0::execute(&mut processor, &[x, y]);
+
+        // Assert
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
     }
 
     #[wasm_bindgen_test]

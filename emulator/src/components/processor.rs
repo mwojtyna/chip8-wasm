@@ -48,7 +48,7 @@ impl Processor {
         // Fetch data
         let instruction = self.fetch();
         self.pc += 2;
-        debug!("Instruction: {:#06X}", instruction);
+        debug!("Instruction: {:#06X}, PC: {:#06X}", instruction, self.pc);
 
         // Decode instruction
         let (first, rest) = self.decode(instruction);
@@ -113,6 +113,26 @@ impl Processor {
                     x, self.v[x as usize], nn
                 );
             }
+            0x4 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let nn = rest & 0x0FF;
+                OpCode4XNN::execute(self, &[x, nn]);
+
+                debug!(
+                    "Skip next instruction if V{:X} ({:#06X}) != {:#06X}",
+                    x, self.v[x as usize], nn
+                );
+            }
+            0x5 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let y = (rest & 0x0F0) >> 0x4;
+                OpCode5XY0::execute(self, &[x, y]);
+
+                debug!(
+                    "Skip next instruction if V{:X} ({:#06X}) == V{:X} ({:#06X})",
+                    x, self.v[x as usize], y, self.v[y as usize]
+                );
+            }
             0x6 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let nn = rest & 0x0FF;
@@ -126,6 +146,16 @@ impl Processor {
                 OpCode7XNN::execute(self, &[x, nn]);
 
                 debug!("Add {:#06X} to V{:X} -> {:#06X}", nn, x, self.v[x as usize]);
+            }
+            0x9 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let y = (rest & 0x0F0) >> 0x4;
+                OpCode9XY0::execute(self, &[x, y]);
+
+                debug!(
+                    "Skip next instruction if V{:X} ({:#06X}) != V{:X} ({:#06X})",
+                    x, self.v[x as usize], y, self.v[y as usize]
+                );
             }
             0xA => {
                 OpCodeANNN::execute(self, &[rest]);
