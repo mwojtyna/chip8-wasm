@@ -74,7 +74,9 @@ impl Processor {
         console::log_1(&format!("First: {:#X}, Rest: {:#05X}", first, rest).into());
 
         // Execute instruction
-        self.execute(first, rest);
+        self.execute(first, rest).unwrap_or_else(|err| {
+            console::warn_1(&format!("{}", err).into());
+        });
     }
 
     fn fetch(&self) -> u16 {
@@ -90,28 +92,22 @@ impl Processor {
         (first, rest)
     }
     fn execute(&mut self, first: u16, rest: u16) -> Result<(), Box<dyn std::error::Error>> {
-        let msg = format!("Opcode {:#06X} not recognized!", first << 0xC | rest);
-        let on_not_found = || {
-            console::warn_1(&msg.clone().into());
-        };
         let mut not_found = false;
 
         match first {
             0x0 => match rest {
                 0x0E0 => OpCode00E0::execute(self),
                 _ => {
-                    on_not_found();
                     not_found = true;
                 }
             },
             _ => {
-                on_not_found();
                 not_found = true;
             }
         }
 
         if not_found {
-            Err(msg.into())
+            Err(format!("Opcode {:#06X} not recognized!", first << 0xC | rest).into())
         } else {
             Ok(())
         }
