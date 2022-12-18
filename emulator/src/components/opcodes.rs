@@ -26,10 +26,21 @@ impl OpCodeWithData for OpCode6XNN {
         processor.v[x] = nn;
     }
 }
+#[allow(clippy::expect_fun_call)]
+impl OpCodeWithData for OpCode7XNN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let nn = data[1] as u8;
+        processor.v[x] = processor.v[x]
+            .checked_add(nn)
+            .expect(&format!("Overflow on V{}!", x));
+    }
+}
 
 pub struct OpCode00E0 {}
 pub struct OpCode1NNN {}
 pub struct OpCode6XNN {}
+pub struct OpCode7XNN {}
 
 #[allow(non_snake_case)]
 mod tests {
@@ -75,5 +86,20 @@ mod tests {
 
         // Assert
         assert_eq!(processor.v[x as usize] as u16, nn);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_7XNN() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let nn = 0x23;
+        processor.v[x as usize] = 0x1;
+
+        // Act
+        OpCode7XNN::execute(&mut processor, &[x, nn]);
+
+        // Assert
+        assert_eq!(processor.v[x as usize] as u16, x + nn);
     }
 }

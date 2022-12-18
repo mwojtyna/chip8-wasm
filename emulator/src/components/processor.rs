@@ -117,6 +117,15 @@ impl Processor {
                     &format!("Set V{} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]).into(),
                 );
             }
+            0x7 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let nn = rest & 0x0FF;
+                OpCode7XNN::execute(self, &[x, nn]);
+
+                console::log_1(
+                    &format!("Add {:#06X} to V{} -> {:#06X}", nn, x, self.v[x as usize]).into(),
+                );
+            }
             _ => {
                 not_found = true;
             }
