@@ -61,14 +61,14 @@ impl Processor {
 
     pub fn cycle(&mut self) {
         // Fetch data
-        let instruction = Self::fetch(self.memory, self.pc);
+        let instruction = self.fetch();
         self.pc += 2;
 
         console::log_1(&format!("Instruction: {:#06X}", instruction).into());
     }
-    fn fetch(memory: [u8; 4096], pc: u16) -> u16 {
-        let first_nibble = memory[pc as usize] as u16;
-        let second_nibble = memory[pc as usize + 1] as u16;
+    fn fetch(&self) -> u16 {
+        let first_nibble = self.memory[self.pc as usize] as u16;
+        let second_nibble = self.memory[self.pc as usize + 1] as u16;
 
         (first_nibble) << 0x8 | second_nibble
     }
@@ -99,8 +99,12 @@ mod tests {
         memory[1] = 0xcd;
         let pc: u16 = 0x0;
 
+        let mut processor = Processor::init();
+        processor.memory = memory;
+        processor.pc = pc;
+
         // Run
-        let result = Processor::fetch(memory, pc);
+        let result = Processor::fetch(&processor);
 
         // Assert
         let expected = 0xabcd;
