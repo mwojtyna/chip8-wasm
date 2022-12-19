@@ -6,6 +6,7 @@ mod components {
 pub mod opcodes;
 
 use crate::components::*;
+use components::processor::Compatibility;
 use fluvio_wasm_timer::Delay;
 use log::*;
 use std::time::Duration;
@@ -21,9 +22,9 @@ struct Emulator {
 impl Emulator {
     const INSTRUCTIONS_PER_SECOND: usize = 700;
 
-    pub fn init() -> Emulator {
+    pub fn init(compatibility: Compatibility) -> Emulator {
         Emulator {
-            processor: processor::Processor::init(),
+            processor: processor::Processor::init_compat(compatibility),
             screen: screen::Screen::init(),
         }
     }
@@ -42,11 +43,17 @@ impl Emulator {
 }
 
 #[wasm_bindgen]
-pub fn start() {
+pub fn start(compatibility: &str) {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     console_log::init_with_level(Level::Debug).expect("Failed initializing logger!");
 
-    let mut emulator = Emulator::init();
+    let compatibility_enum = match compatibility {
+        "original" => Compatibility::Original,
+        "new" => Compatibility::New,
+        _ => panic!("Invalid compatibility setting!"),
+    };
+
+    let mut emulator = Emulator::init(compatibility_enum);
     emulator.processor.memory.load_fonts();
     emulator
         .processor

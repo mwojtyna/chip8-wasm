@@ -11,6 +11,15 @@
 		<canvas class="rendering-pixelated" aria-label="Emulator screen"
 			>Could not load emulator</canvas
 		>
+
+		<div class="flex gap-4 text-xl">
+			<label for="compatibility">COMPATIBILITY:</label>
+			<select id="compatibility" class="size bg-white px-2 py-1 text-black">
+				<option value="original">COSMAC VIP</option>
+				<option value="new">CHIP-48 / SUPER-CHIP</option>
+			</select>
+		</div>
+
 		<script type="module" src="/src/main.ts"></script>
 	</body>
 </html>

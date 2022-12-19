@@ -4,6 +4,12 @@ use crate::opcodes::*;
 use array_init::array_init;
 use log::*;
 
+#[derive(Debug, PartialEq)]
+pub enum Compatibility {
+    Original,
+    New,
+}
+
 #[derive(Debug)]
 pub struct Processor {
     /** Program counter - points to the current instruction in the memory */
@@ -27,9 +33,12 @@ pub struct Processor {
 
     pub memory: Memory,
     pub gfx: [bool; Screen::WIDTH * Screen::HEIGHT],
+    pub compatibility: Compatibility,
 }
 impl Processor {
+    /** Initializes with compatibility for original systems */
     pub fn init() -> Processor {
+        info!("Initializing processor with compatibility for original systems");
         Processor {
             pc: Memory::ROM_BEGIN_INDEX as u16,
             i: 0,
@@ -39,6 +48,29 @@ impl Processor {
             v: array_init(|_| 0),
             memory: Memory::init(),
             gfx: array_init(|_| false),
+            compatibility: Compatibility::Original,
+        }
+    }
+    /** Initializes with compatibility for newer systems */
+    pub fn init_newer() -> Processor {
+        info!("Initializing processor with compatibility for newer systems");
+        Processor {
+            pc: Memory::ROM_BEGIN_INDEX as u16,
+            i: 0,
+            stack: Vec::new(),
+            delay_timer: 0,
+            sound_timer: 0,
+            v: array_init(|_| 0),
+            memory: Memory::init(),
+            gfx: array_init(|_| false),
+            compatibility: Compatibility::New,
+        }
+    }
+    /** Initializes with specified compatibility */
+    pub fn init_compat(compatibility: Compatibility) -> Processor {
+        match compatibility {
+            Compatibility::Original => Processor::init(),
+            Compatibility::New => Processor::init_newer(),
         }
     }
 
@@ -206,6 +238,16 @@ impl Processor {
                     debug!(
                         "Set V{:X} to V{:X} - V{:X} -> {:#06X}",
                         x, x, y, self.v[x as usize]
+                    );
+                }
+                0x6 => {
+                    let x = (rest & 0xF00) >> 0x8;
+                    let y = (rest & 0x0F0) >> 0x4;
+                    OpCode8XY6::execute(self, &[x, y]);
+
+                    debug!(
+                        "Set V{:X} to V{:X} >> 1 -> {:#06X}",
+                        x, y, self.v[x as usize]
                     );
                 }
                 0x7 => {

@@ -3,7 +3,7 @@
 	"less.validate": false,
 	"scss.validate": false,
 	"stylelint.validate": ["css", "scss"],
-	"cSpell.words": ["ANNN", "bindgen", "DXYN", "fluvio"],
+	"cSpell.words": ["ANNN", "bindgen", "COSMAC", "DXYN", "fluvio"],
 	"emeraldwalk.runonsave": {
 		"commands": [
 			{
@@ -11,5 +11,6 @@
 				"cmd": "yarn wasm-build"
 			}
 		]
-	}
+	},
+	"typescript.tsdk": "node_modules/typescript/lib"
 }

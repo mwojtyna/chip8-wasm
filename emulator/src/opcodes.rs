@@ -1,4 +1,4 @@
-use super::processor::Processor;
+use super::processor::{Compatibility, Processor};
 use super::screen::Screen;
 use array_init::array_init;
 use log::*;
@@ -18,6 +18,7 @@ pub struct OpCode8XY2 {}
 pub struct OpCode8XY3 {}
 pub struct OpCode8XY4 {}
 pub struct OpCode8XY5 {}
+pub struct OpCode8XY6 {}
 pub struct OpCode8XY7 {}
 pub struct OpCode9XY0 {}
 pub struct OpCodeANNN {}
@@ -140,6 +141,18 @@ impl OpCode for OpCode8XY5 {
 
         processor.v[x] = result;
         processor.v[0xF] = !overflow as u8;
+    }
+}
+impl OpCode for OpCode8XY6 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let y = data[1] as usize;
+
+        if processor.compatibility == Compatibility::Original {
+            processor.v[x] = processor.v[y];
+        }
+        processor.v[0xF] = processor.v[x] & 0x1;
+        processor.v[x] >>= 0x1;
     }
 }
 impl OpCode for OpCode8XY7 {
@@ -474,6 +487,57 @@ mod tests {
         // Assert
         assert_eq!(processor.v[x as usize], 0xFF, "v[x] should be 0xFF");
         assert_eq!(processor.v[0xF], 0x0, "v[0xF] should be 0x0");
+    }
+
+    #[wasm_bindgen_test]
+    fn test_8XY6_original() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::Original);
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[y as usize] = 0x23;
+
+        // Act
+        OpCode8XY6::execute(&mut processor, &[x, y]);
+
+        // Assert
+        assert_eq!(
+            processor.v[x as usize],
+            0x23 >> 1,
+            "v[x] should be {:X}",
+            0x23 >> 1
+        );
+        assert_eq!(
+            processor.v[0xF],
+            0x23 & 0x1,
+            "v[0xF] should be {:X}",
+            0x23 & 0x1
+        );
+    }
+    #[wasm_bindgen_test]
+    fn test_8XY6_new() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::New);
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[x as usize] = 0x23;
+
+        // Act
+        OpCode8XY6::execute(&mut processor, &[x, y]);
+
+        // Assert
+        assert_eq!(
+            processor.v[x as usize],
+            0x23 >> 1,
+            "v[x] should be {:X}",
+            0x23 >> 1
+        );
+        assert_eq!(
+            processor.v[0xF],
+            0x23 & 0x1,
+            "v[0xF] should be {:X}",
+            0x23 & 0x1
+        );
     }
 
     #[wasm_bindgen_test]
