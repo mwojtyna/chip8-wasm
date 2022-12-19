@@ -147,16 +147,31 @@ impl Processor {
 
                 debug!("Add {:#06X} to V{:X} -> {:#06X}", nn, x, self.v[x as usize]);
             }
-            0x8 => {
-                let x = (rest & 0xF00) >> 0x8;
-                let y = (rest & 0x0F0) >> 0x4;
-                OpCode8XY0::execute(self, &[x, y]);
+            0x8 => match rest & 0x00F {
+                0x0 => {
+                    let x = (rest & 0xF00) >> 0x8;
+                    let y = (rest & 0x0F0) >> 0x4;
+                    OpCode8XY0::execute(self, &[x, y]);
 
-                debug!(
-                    "Set V{:X} to V{:X} ({:#06X}) -> {:#06X}",
-                    x, y, self.v[y as usize], self.v[x as usize]
-                );
-            }
+                    debug!(
+                        "Set V{:X} to V{:X} ({:#06X}) -> {:#06X}",
+                        x, y, self.v[y as usize], self.v[x as usize]
+                    );
+                }
+                0x1 => {
+                    let x = (rest & 0xF00) >> 0x8;
+                    let y = (rest & 0x0F0) >> 0x4;
+                    OpCode8XY1::execute(self, &[x, y]);
+
+                    debug!(
+                        "Set V{:X} to V{:X} | V{:X} -> {:#06X}",
+                        x, x, y, self.v[y as usize]
+                    );
+                }
+                _ => {
+                    not_found = true;
+                }
+            },
             0x9 => {
                 let x = (rest & 0xF00) >> 0x8;
                 let y = (rest & 0x0F0) >> 0x4;
