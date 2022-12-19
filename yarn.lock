@@ -953,6 +953,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chip8-emulator@workspace:emulator/pkg":
+  version: 0.0.0-use.local
+  resolution: "chip8-emulator@workspace:emulator/pkg"
+  languageName: unknown
+  linkType: soft
+
 "chip8-wasm@workspace:.":
   version: 0.0.0-use.local
   resolution: "chip8-wasm@workspace:."
