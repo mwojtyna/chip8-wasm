@@ -208,6 +208,16 @@ impl Processor {
                         x, x, y, self.v[x as usize]
                     );
                 }
+                0x7 => {
+                    let x = (rest & 0xF00) >> 0x8;
+                    let y = (rest & 0x0F0) >> 0x4;
+                    OpCode8XY7::execute(self, &[x, y]);
+
+                    debug!(
+                        "Set V{:X} to V{:X} - V{:X} -> {:#06X}",
+                        x, y, x, self.v[x as usize]
+                    );
+                }
                 _ => {
                     not_found = true;
                 }

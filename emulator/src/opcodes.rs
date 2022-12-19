@@ -18,6 +18,7 @@ pub struct OpCode8XY2 {}
 pub struct OpCode8XY3 {}
 pub struct OpCode8XY4 {}
 pub struct OpCode8XY5 {}
+pub struct OpCode8XY7 {}
 pub struct OpCode9XY0 {}
 pub struct OpCodeANNN {}
 pub struct OpCodeDXYN {}
@@ -136,6 +137,16 @@ impl OpCode for OpCode8XY5 {
         let x = data[0] as usize;
         let y = data[1] as usize;
         let (result, overflow) = processor.v[x].overflowing_sub(processor.v[y]);
+
+        processor.v[x] = result;
+        processor.v[0xF] = !overflow as u8;
+    }
+}
+impl OpCode for OpCode8XY7 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let y = data[1] as usize;
+        let (result, overflow) = processor.v[y].overflowing_sub(processor.v[x]);
 
         processor.v[x] = result;
         processor.v[0xF] = !overflow as u8;
@@ -459,6 +470,39 @@ mod tests {
 
         // Act
         OpCode8XY5::execute(&mut processor, &[x, y]);
+
+        // Assert
+        assert_eq!(processor.v[x as usize], 0xFF, "v[x] should be 0xFF");
+        assert_eq!(processor.v[0xF], 0x0, "v[0xF] should be 0x0");
+    }
+
+    #[wasm_bindgen_test]
+    fn test_8XY7_no_underflow() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[x as usize] = 0x23;
+        processor.v[y as usize] = 0x24;
+
+        // Act
+        OpCode8XY7::execute(&mut processor, &[x, y]);
+
+        // Assert
+        assert_eq!(processor.v[x as usize], 0x24 - 0x23, "v[x] should be 0x1");
+        assert_eq!(processor.v[0xF], 0x1, "v[0xF] should be 0x1");
+    }
+    #[wasm_bindgen_test]
+    fn test_8XY7_underflow() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[x as usize] = 0x24;
+        processor.v[y as usize] = 0x23;
+
+        // Act
+        OpCode8XY7::execute(&mut processor, &[x, y]);
 
         // Assert
         assert_eq!(processor.v[x as usize], 0xFF, "v[x] should be 0xFF");
