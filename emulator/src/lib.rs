@@ -1,9 +1,9 @@
 mod components {
     pub mod memory;
-    pub mod opcodes;
     pub mod processor;
     pub mod screen;
 }
+pub mod opcodes;
 
 use crate::components::*;
 use fluvio_wasm_timer::Delay;

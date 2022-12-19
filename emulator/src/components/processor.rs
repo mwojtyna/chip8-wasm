@@ -1,6 +1,6 @@
 use super::memory::Memory;
-use super::opcodes::*;
 use super::screen::Screen;
+use crate::opcodes::*;
 use array_init::array_init;
 use log::*;
 
@@ -146,6 +146,16 @@ impl Processor {
                 OpCode7XNN::execute(self, &[x, nn]);
 
                 debug!("Add {:#06X} to V{:X} -> {:#06X}", nn, x, self.v[x as usize]);
+            }
+            0x8 => {
+                let x = (rest & 0xF00) >> 0x8;
+                let y = (rest & 0x0F0) >> 0x4;
+                OpCode8XY0::execute(self, &[x, y]);
+
+                debug!(
+                    "Set V{:X} to V{:X} ({:#06X}) -> {:#06X}",
+                    x, y, self.v[y as usize], self.v[x as usize]
+                );
             }
             0x9 => {
                 let x = (rest & 0xF00) >> 0x8;

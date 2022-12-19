@@ -12,6 +12,7 @@ pub struct OpCode4XNN {}
 pub struct OpCode5XY0 {}
 pub struct OpCode6XNN {}
 pub struct OpCode7XNN {}
+pub struct OpCode8XY0 {}
 pub struct OpCode9XY0 {}
 pub struct OpCodeANNN {}
 pub struct OpCodeDXYN {}
@@ -85,6 +86,13 @@ impl OpCode for OpCode7XNN {
         let x = data[0] as usize;
         let nn = data[1] as u8;
         processor.v[x] = processor.v[x].wrapping_add(nn)
+    }
+}
+impl OpCode for OpCode8XY0 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let y = data[1] as usize;
+        processor.v[x] = processor.v[y];
     }
 }
 impl OpCode for OpCode9XY0 {
@@ -280,6 +288,21 @@ mod tests {
 
         // Assert
         assert_eq!(processor.v[x as usize] as u16, x + nn);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_8XY0() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[y as usize] = 0x23;
+
+        // Act
+        OpCode8XY0::execute(&mut processor, &[x, y]);
+
+        // Assert
+        assert_eq!(processor.v[x as usize], 0x23);
     }
 
     #[wasm_bindgen_test]
