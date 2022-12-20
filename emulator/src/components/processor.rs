@@ -136,7 +136,7 @@ impl Processor {
                 );
             }
             0x3 => {
-                let x = (rest & 0xF00) >> 0x8;
+                let x = (rest & 0xF00) >> 8;
                 let nn = rest & 0x0FF;
                 OpCode3XNN::execute(self, &[x, nn]);
 
@@ -146,7 +146,7 @@ impl Processor {
                 );
             }
             0x4 => {
-                let x = (rest & 0xF00) >> 0x8;
+                let x = (rest & 0xF00) >> 8;
                 let nn = rest & 0x0FF;
                 OpCode4XNN::execute(self, &[x, nn]);
 
@@ -156,8 +156,8 @@ impl Processor {
                 );
             }
             0x5 => {
-                let x = (rest & 0xF00) >> 0x8;
-                let y = (rest & 0x0F0) >> 0x4;
+                let x = (rest & 0xF00) >> 8;
+                let y = (rest & 0x0F0) >> 4;
                 OpCode5XY0::execute(self, &[x, y]);
 
                 debug!(
@@ -166,14 +166,14 @@ impl Processor {
                 );
             }
             0x6 => {
-                let x = (rest & 0xF00) >> 0x8;
+                let x = (rest & 0xF00) >> 8;
                 let nn = rest & 0x0FF;
                 OpCode6XNN::execute(self, &[x, nn]);
 
                 debug!("Set V{:X} to {:#06X} -> {:#06X}", x, nn, self.v[x as usize]);
             }
             0x7 => {
-                let x = (rest & 0xF00) >> 0x8;
+                let x = (rest & 0xF00) >> 8;
                 let nn = rest & 0x0FF;
                 OpCode7XNN::execute(self, &[x, nn]);
 
@@ -181,8 +181,8 @@ impl Processor {
             }
             0x8 => match rest & 0x00F {
                 0x0 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY0::execute(self, &[x, y]);
 
                     debug!(
@@ -191,8 +191,8 @@ impl Processor {
                     );
                 }
                 0x1 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY1::execute(self, &[x, y]);
 
                     debug!(
@@ -201,8 +201,8 @@ impl Processor {
                     );
                 }
                 0x2 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY2::execute(self, &[x, y]);
 
                     debug!(
@@ -211,8 +211,8 @@ impl Processor {
                     );
                 }
                 0x3 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY3::execute(self, &[x, y]);
 
                     debug!(
@@ -221,8 +221,8 @@ impl Processor {
                     );
                 }
                 0x4 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY4::execute(self, &[x, y]);
 
                     debug!(
@@ -231,8 +231,8 @@ impl Processor {
                     );
                 }
                 0x5 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY5::execute(self, &[x, y]);
 
                     debug!(
@@ -241,8 +241,8 @@ impl Processor {
                     );
                 }
                 0x6 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY6::execute(self, &[x, y]);
 
                     debug!(
@@ -251,8 +251,8 @@ impl Processor {
                     );
                 }
                 0x7 => {
-                    let x = (rest & 0xF00) >> 0x8;
-                    let y = (rest & 0x0F0) >> 0x4;
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
                     OpCode8XY7::execute(self, &[x, y]);
 
                     debug!(
@@ -260,13 +260,23 @@ impl Processor {
                         x, y, x, self.v[x as usize]
                     );
                 }
+                0xE => {
+                    let x = (rest & 0xF00) >> 8;
+                    let y = (rest & 0x0F0) >> 4;
+                    OpCode8XYE::execute(self, &[x, y]);
+
+                    debug!(
+                        "Set V{:X} to V{:X} << 1 -> {:#06X}",
+                        x, y, self.v[x as usize]
+                    );
+                }
                 _ => {
                     not_found = true;
                 }
             },
             0x9 => {
-                let x = (rest & 0xF00) >> 0x8;
-                let y = (rest & 0x0F0) >> 0x4;
+                let x = (rest & 0xF00) >> 8;
+                let y = (rest & 0x0F0) >> 4;
                 OpCode9XY0::execute(self, &[x, y]);
 
                 debug!(
@@ -280,8 +290,8 @@ impl Processor {
                 debug!("Set I to {:#06X} -> {:#06X}", rest, self.i);
             }
             0xD => {
-                let x = (rest & 0xF00) >> 0x8;
-                let y = (rest & 0x0F0) >> 0x4;
+                let x = (rest & 0xF00) >> 8;
+                let y = (rest & 0x0F0) >> 4;
                 let n = rest & 0x00F;
                 OpCodeDXYN::execute(self, &[x, y, n]);
 
