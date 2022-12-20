@@ -25,6 +25,7 @@ pub struct OpCode9XY0 {}
 pub struct OpCodeANNN {}
 pub struct OpCodeBNNN {}
 pub struct OpCodeBXNN {}
+pub struct OpCodeCXNN {}
 pub struct OpCodeDXYN {}
 
 pub trait OpCode {
@@ -216,6 +217,15 @@ impl OpCode for OpCodeBXNN {
         let x = data[0] as usize;
         let nnn = data[1]; // X is included
         processor.pc = nnn + processor.v[x] as u16;
+    }
+}
+impl OpCode for OpCodeCXNN {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let nn = data[1];
+        let random = rand::random::<u8>();
+
+        processor.v[x] = random & nn as u8;
     }
 }
 impl OpCode for OpCodeDXYN {
@@ -717,6 +727,21 @@ mod tests {
 
         // Assert
         assert_eq!(processor.pc, nnn + 0x2);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_CXNN() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        let nn = 0x23;
+        let old_vx = processor.v[x as usize];
+
+        // Act
+        OpCodeCXNN::execute(&mut processor, &[x, nn]);
+
+        // Assert
+        assert_ne!(old_vx, processor.v[x as usize]);
     }
 
     #[wasm_bindgen_test]

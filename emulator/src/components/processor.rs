@@ -311,6 +311,16 @@ impl Processor {
                     );
                 }
             }
+            0xC => {
+                let x = (rest & 0xF00) >> 8;
+                let nn = rest & 0x0FF;
+                OpCodeCXNN::execute(self, &[x, nn]);
+
+                debug!(
+                    "Set V{:X} to random byte & {:#06X} -> {:#06X}",
+                    x, nn, self.v[x as usize]
+                );
+            }
             0xD => {
                 let x = (rest & 0xF00) >> 8;
                 let y = (rest & 0x0F0) >> 4;
