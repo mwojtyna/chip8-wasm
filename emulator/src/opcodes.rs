@@ -23,6 +23,8 @@ pub struct OpCode8XY7 {}
 pub struct OpCode8XYE {}
 pub struct OpCode9XY0 {}
 pub struct OpCodeANNN {}
+pub struct OpCodeBNNN {}
+pub struct OpCodeBXNN {}
 pub struct OpCodeDXYN {}
 
 pub trait OpCode {
@@ -191,6 +193,29 @@ impl OpCode for OpCode9XY0 {
 impl OpCode for OpCodeANNN {
     fn execute(processor: &mut Processor, data: &[u16]) {
         processor.i = data[0];
+    }
+}
+impl OpCode for OpCodeBNNN {
+    // BXNN for newer systems
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        if processor.compatibility == Compatibility::New {
+            panic!("BXNN is not supported on newer systems!");
+        }
+
+        let nnn = data[0];
+        processor.pc = nnn + processor.v[0] as u16;
+    }
+}
+impl OpCode for OpCodeBXNN {
+    // BXNN for original systems
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        if processor.compatibility == Compatibility::Original {
+            panic!("BXNN is not supported on original systems!");
+        }
+
+        let x = data[0] as usize;
+        let nnn = data[1]; // X is included
+        processor.pc = nnn + processor.v[x] as u16;
     }
 }
 impl OpCode for OpCodeDXYN {
@@ -611,31 +636,31 @@ mod tests {
             (0x23 & 0x80) >> 7
         );
     }
-	#[wasm_bindgen_test]
-	fn test_8XYE_new() {
-		// Arrange
-		let mut processor = Processor::init_compat(Compatibility::New);
-		let x = 0x1;
-		let y = 0x2;
-		processor.v[x as usize] = 0x23;
+    #[wasm_bindgen_test]
+    fn test_8XYE_new() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::New);
+        let x = 0x1;
+        let y = 0x2;
+        processor.v[x as usize] = 0x23;
 
-		// Act
-		OpCode8XYE::execute(&mut processor, &[x, y]);
+        // Act
+        OpCode8XYE::execute(&mut processor, &[x, y]);
 
-		// Assert
-		assert_eq!(
-			processor.v[x as usize],
-			0x23 << 1,
-			"v[x] should be {:X}",
-			0x23 << 1
-		);
-		assert_eq!(
-			processor.v[0xF],
-			(0x23 & 0x80) >> 7,
-			"v[0xF] should be {:X}",
-			(0x23 & 0x80) >> 7
-		);
-	}
+        // Assert
+        assert_eq!(
+            processor.v[x as usize],
+            0x23 << 1,
+            "v[x] should be {:X}",
+            0x23 << 1
+        );
+        assert_eq!(
+            processor.v[0xF],
+            (0x23 & 0x80) >> 7,
+            "v[0xF] should be {:X}",
+            (0x23 & 0x80) >> 7
+        );
+    }
 
     #[wasm_bindgen_test]
     fn test_9XY0() {
@@ -664,6 +689,34 @@ mod tests {
 
         // Assert
         assert_eq!(processor.i, nnn);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_BNNN() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::Original);
+        let nnn = 0x123;
+        processor.v[0] = 0x1;
+
+        // Act
+        OpCodeBNNN::execute(&mut processor, &[nnn]);
+
+        // Assert
+        assert_eq!(processor.pc, nnn + 0x1);
+    }
+    #[wasm_bindgen_test]
+    fn test_BXNN() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::New);
+        let x = 0x1;
+        let nnn = 0x123;
+        processor.v[x] = 0x2;
+
+        // Act
+        OpCodeBXNN::execute(&mut processor, &[x as u16, nnn]);
+
+        // Assert
+        assert_eq!(processor.pc, nnn + 0x2);
     }
 
     #[wasm_bindgen_test]

@@ -3,7 +3,7 @@
 	"less.validate": false,
 	"scss.validate": false,
 	"stylelint.validate": ["css", "scss"],
-	"cSpell.words": ["ANNN", "bindgen", "COSMAC", "DXYN", "fluvio"],
+	"cSpell.words": ["ANNN", "bindgen", "BNNN", "BXNN", "COSMAC", "DXYN", "fluvio"],
 	"emeraldwalk.runonsave": {
 		"commands": [
 			{

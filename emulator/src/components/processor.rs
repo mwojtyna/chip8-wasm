@@ -123,12 +123,14 @@ impl Processor {
                 }
             },
             0x1 => {
-                OpCode1NNN::execute(self, &[rest]);
+                let nnn = rest;
+                OpCode1NNN::execute(self, &[nnn]);
 
                 debug!("Jump to {:#06X} -> {:#06X}", rest, self.pc);
             }
             0x2 => {
-                OpCode2NNN::execute(self, &[rest]);
+                let nnn = rest;
+                OpCode2NNN::execute(self, &[nnn]);
 
                 debug!(
                     "Call subroutine at {:#06X} -> stack[0]={:#06X}",
@@ -285,9 +287,29 @@ impl Processor {
                 );
             }
             0xA => {
-                OpCodeANNN::execute(self, &[rest]);
+                let nnn = rest;
+                OpCodeANNN::execute(self, &[nnn]);
 
                 debug!("Set I to {:#06X} -> {:#06X}", rest, self.i);
+            }
+            0xB => {
+                let nnn = rest;
+                if self.compatibility == Compatibility::Original {
+                    OpCodeBNNN::execute(self, &[nnn]);
+
+                    debug!(
+                        "Jump to {:#06X} + V0 ({:#06X}) -> {:#06X}",
+                        nnn, self.v[0], self.pc
+                    );
+                } else if self.compatibility == Compatibility::New {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeBXNN::execute(self, &[x, nnn]);
+
+                    debug!(
+                        "Jump to {:#06X} + V{:X} ({:#06X}) -> {:#06X}",
+                        nnn, x, self.v[x as usize], self.pc
+                    );
+                }
             }
             0xD => {
                 let x = (rest & 0xF00) >> 8;
