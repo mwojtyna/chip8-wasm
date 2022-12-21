@@ -370,6 +370,15 @@ impl Processor {
                         x, self.v[x as usize], self.delay_timer
                     );
                 }
+                0x18 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX18::execute(self, &[x]);
+
+                    debug!(
+                        "Set sound timer to V{:X} ({:#06X}) -> {:#06X}",
+                        x, self.v[x as usize], self.sound_timer
+                    );
+                }
                 _ => {
                     not_found = true;
                 }
