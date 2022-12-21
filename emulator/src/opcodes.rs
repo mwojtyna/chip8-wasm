@@ -270,6 +270,12 @@ mod tests {
     use array_init::array_init;
     use wasm_bindgen_test::wasm_bindgen_test;
 
+    fn execute_instruction(processor: &mut Processor, instruction: u16) {
+        processor
+            .execute((instruction & 0xF000) >> 0xC, instruction & 0x0FFF)
+            .unwrap();
+    }
+
     #[wasm_bindgen_test]
     fn test_00E0() {
         // Arrange
@@ -277,7 +283,7 @@ mod tests {
         processor.gfx = array_init(|_| true);
 
         // Act
-        OpCode00E0::execute(&mut processor, &[]);
+        execute_instruction(&mut processor, 0x00E0);
 
         // Assert
         assert_eq!(processor.gfx, array_init(|_| false));
@@ -292,7 +298,7 @@ mod tests {
         processor.stack.push(return_address);
 
         // Act
-        OpCode00EE::execute(&mut processor, &[]);
+        execute_instruction(&mut processor, 0x00EE);
 
         // Assert
         assert_eq!(
@@ -309,7 +315,7 @@ mod tests {
         let jump_to = 0x123;
 
         // Act
-        OpCode1NNN::execute(&mut processor, &[jump_to]);
+        execute_instruction(&mut processor, 0x1000 | jump_to);
 
         // Assert
         assert_eq!(processor.pc, jump_to);
@@ -322,7 +328,7 @@ mod tests {
         let nnn = 0x123;
 
         // Act
-        OpCode2NNN::execute(&mut processor, &[nnn]);
+        execute_instruction(&mut processor, 0x2000 | nnn);
 
         // Assert
         assert_eq!(
@@ -342,7 +348,7 @@ mod tests {
         processor.v[x as usize] = nn;
 
         // Act
-        OpCode3XNN::execute(&mut processor, &[x, nn as u16]);
+        execute_instruction(&mut processor, 0x3000 | (x << 8) | nn as u16);
 
         // Assert
         assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
@@ -357,7 +363,7 @@ mod tests {
         processor.v[x as usize] = 0x0;
 
         // Act
-        OpCode4XNN::execute(&mut processor, &[x, nn as u16]);
+        execute_instruction(&mut processor, 0x4000 | (x << 8) | nn as u16);
 
         // Assert
         assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
@@ -373,7 +379,7 @@ mod tests {
         processor.v[y as usize] = 0x23;
 
         // Act
-        OpCode5XY0::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x5000 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
@@ -387,7 +393,7 @@ mod tests {
         let nn = 0x23;
 
         // Act
-        OpCode6XNN::execute(&mut processor, &[x, nn]);
+        execute_instruction(&mut processor, 0x6000 | (x << 8) | nn);
 
         // Assert
         assert_eq!(processor.v[x as usize] as u16, nn);
@@ -402,7 +408,7 @@ mod tests {
         processor.v[x as usize] = 0x1;
 
         // Act
-        OpCode7XNN::execute(&mut processor, &[x, nn]);
+        execute_instruction(&mut processor, 0x7000 | (x << 8) | nn);
 
         // Assert
         assert_eq!(processor.v[x as usize] as u16, x + nn);
@@ -417,7 +423,7 @@ mod tests {
         processor.v[y as usize] = 0x23;
 
         // Act
-        OpCode8XY0::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8000 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x23);
@@ -433,7 +439,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode8XY1::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8001 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x23 | 0x24);
@@ -449,7 +455,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode8XY2::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8002 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x23 & 0x24);
@@ -465,7 +471,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode8XY3::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8003 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x23 ^ 0x24);
@@ -481,7 +487,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode8XY4::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8004 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x23 + 0x24, "v[x] should be 0x47");
@@ -497,7 +503,7 @@ mod tests {
         processor.v[y as usize] = 0x1;
 
         // Act
-        OpCode8XY4::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8004 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x0, "v[x] should be 0x0");
@@ -514,7 +520,7 @@ mod tests {
         processor.v[y as usize] = 0x23;
 
         // Act
-        OpCode8XY5::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8005 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x24 - 0x23, "v[x] should be 0x1");
@@ -530,7 +536,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode8XY5::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8005 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0xFF, "v[x] should be 0xFF");
@@ -546,7 +552,7 @@ mod tests {
         processor.v[y as usize] = 0x23;
 
         // Act
-        OpCode8XY6::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8006 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(
@@ -571,7 +577,7 @@ mod tests {
         processor.v[x as usize] = 0x23;
 
         // Act
-        OpCode8XY6::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8006 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(
@@ -598,7 +604,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode8XY7::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8007 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0x24 - 0x23, "v[x] should be 0x1");
@@ -614,7 +620,7 @@ mod tests {
         processor.v[y as usize] = 0x23;
 
         // Act
-        OpCode8XY7::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x8007 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.v[x as usize], 0xFF, "v[x] should be 0xFF");
@@ -630,7 +636,7 @@ mod tests {
         processor.v[y as usize] = 0x23;
 
         // Act
-        OpCode8XYE::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x800E | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(
@@ -655,7 +661,7 @@ mod tests {
         processor.v[x as usize] = 0x23;
 
         // Act
-        OpCode8XYE::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x800E | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(
@@ -682,7 +688,7 @@ mod tests {
         processor.v[y as usize] = 0x24;
 
         // Act
-        OpCode9XY0::execute(&mut processor, &[x, y]);
+        execute_instruction(&mut processor, 0x9000 | (x << 8) | (y << 4));
 
         // Assert
         assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
@@ -695,7 +701,7 @@ mod tests {
         let nnn = 0x123;
 
         // Act
-        OpCodeANNN::execute(&mut processor, &[nnn]);
+        execute_instruction(&mut processor, 0xA000 | nnn);
 
         // Assert
         assert_eq!(processor.i, nnn);
@@ -709,7 +715,7 @@ mod tests {
         processor.v[0] = 0x1;
 
         // Act
-        OpCodeBNNN::execute(&mut processor, &[nnn]);
+        execute_instruction(&mut processor, 0xB000 | nnn);
 
         // Assert
         assert_eq!(processor.pc, nnn + 0x1);
@@ -718,12 +724,12 @@ mod tests {
     fn test_BXNN() {
         // Arrange
         let mut processor = Processor::init_compat(Compatibility::New);
-        let x = 0x1;
+        let x = 0x1_u16;
         let nnn = 0x123;
-        processor.v[x] = 0x2;
+        processor.v[x as usize] = 0x2;
 
         // Act
-        OpCodeBXNN::execute(&mut processor, &[x as u16, nnn]);
+        execute_instruction(&mut processor, 0xB000 | (x << 8) | nnn);
 
         // Assert
         assert_eq!(processor.pc, nnn + 0x2);
@@ -738,7 +744,7 @@ mod tests {
         let old_vx = processor.v[x as usize];
 
         // Act
-        OpCodeCXNN::execute(&mut processor, &[x, nn]);
+        execute_instruction(&mut processor, 0xC000 | (x << 8) | nn);
 
         // Assert
         assert_ne!(old_vx, processor.v[x as usize]);
@@ -761,7 +767,7 @@ mod tests {
         processor.memory.data[processor.i as usize] = 0b01000001;
 
         // Act
-        OpCodeDXYN::execute(&mut processor, &[x, y, n]);
+        execute_instruction(&mut processor, 0xD000 | (x << 8) | (y << 4) | n);
 
         // Assert
         assert_eq!(
@@ -789,7 +795,7 @@ mod tests {
         processor.gfx = array_init(|_| true);
 
         // Act
-        OpCodeDXYN::execute(&mut processor, &[x, y, n]);
+        execute_instruction(&mut processor, 0xD000 | (x << 8) | (y << 4) | n);
 
         // Assert
         assert_eq!(

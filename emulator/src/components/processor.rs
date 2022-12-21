@@ -54,17 +54,10 @@ impl Processor {
     /** Initializes with compatibility for newer systems */
     pub fn init_newer() -> Processor {
         info!("Initializing processor with compatibility for newer systems");
-        Processor {
-            pc: Memory::ROM_BEGIN_INDEX as u16,
-            i: 0,
-            stack: Vec::new(),
-            delay_timer: 0,
-            sound_timer: 0,
-            v: array_init(|_| 0),
-            memory: Memory::init(),
-            gfx: array_init(|_| false),
-            compatibility: Compatibility::New,
-        }
+        let mut processor = Processor::init();
+        processor.compatibility = Compatibility::New;
+
+        processor
     }
     /** Initializes with specified compatibility */
     pub fn init_compat(compatibility: Compatibility) -> Processor {
@@ -103,7 +96,7 @@ impl Processor {
 
         (first, rest)
     }
-    fn execute(&mut self, first: u16, rest: u16) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn execute(&mut self, first: u16, rest: u16) -> Result<(), Box<dyn std::error::Error>> {
         let mut not_found = false;
 
         match first {
