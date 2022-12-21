@@ -1,6 +1,6 @@
 use super::memory::Memory;
 use super::screen::Screen;
-use crate::opcodes::*;
+use crate::{opcodes::*, Emulator};
 use array_init::array_init;
 use log::*;
 
@@ -27,6 +27,8 @@ pub struct Processor {
     /** Sound timer - 8-bit value which functions like the delay timer, but which also gives off a beeping sound as long as it’s not 0 */
     pub sound_timer: u8,
 
+    timer_subtract: f32,
+
     /** 16 8-bit registers, named V0 to VF. */
     /** VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag */
     pub v: [u8; 16],
@@ -38,13 +40,13 @@ pub struct Processor {
 impl Processor {
     /** Initializes with compatibility for original systems */
     pub fn init() -> Processor {
-        info!("Initializing processor with compatibility for original systems");
         Processor {
             pc: Memory::ROM_BEGIN_INDEX as u16,
             i: 0,
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
+            timer_subtract: 0.0,
             v: array_init(|_| 0),
             memory: Memory::init(),
             gfx: array_init(|_| false),
@@ -53,7 +55,6 @@ impl Processor {
     }
     /** Initializes with compatibility for newer systems */
     pub fn init_newer() -> Processor {
-        info!("Initializing processor with compatibility for newer systems");
         let mut processor = Processor::init();
         processor.compatibility = Compatibility::New;
 
@@ -62,26 +63,51 @@ impl Processor {
     /** Initializes with specified compatibility */
     pub fn init_compat(compatibility: Compatibility) -> Processor {
         match compatibility {
-            Compatibility::Original => Processor::init(),
-            Compatibility::New => Processor::init_newer(),
+            Compatibility::Original => {
+                info!("Initializing processor with compatibility for original systems");
+                Processor::init()
+            }
+            Compatibility::New => {
+                info!("Initializing processor with compatibility for newer systems");
+                Processor::init_newer()
+            }
         }
     }
 
     pub fn cycle(&mut self) {
         debug!("==========================");
 
-        // Fetch data
         let instruction = self.fetch();
         self.pc += 2;
         debug!("Instruction: {:#06X}, PC: {:#06X}", instruction, self.pc);
 
-        // Decode instruction
         let (first, rest) = self.decode(instruction);
 
-        // Execute instruction
         self.execute(first, rest).unwrap_or_else(|err| {
             warn!("{}", err);
         });
+
+        self.update_timers();
+    }
+    fn update_timers(&mut self) {
+        // We can't do this in a separate thread so we do it this way
+        self.timer_subtract += 1.0 / 60.0 / Emulator::INSTRUCTIONS_PER_SECOND as f32;
+
+        if self.timer_subtract >= 1.0 {
+            if self.delay_timer > 0 {
+                self.delay_timer -= 1;
+            }
+            if self.sound_timer > 0 {
+                self.sound_timer -= 1;
+            }
+
+            self.timer_subtract = 0.0;
+        }
+
+        info!(
+            "Delay timer: {}, Sound timer: {}",
+            self.delay_timer, self.sound_timer
+        );
     }
 
     fn fetch(&self) -> u16 {
@@ -325,6 +351,21 @@ impl Processor {
                     self.v[x as usize], self.v[y as usize], n
                 );
             }
+            0xF => match rest & 0x0FF {
+                0x07 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX07::execute(self, &[x]);
+
+                    debug!(
+                        "Set V{:X} to delay timer ({:#06X}) -> {:#06X}",
+                        x, self.delay_timer, self.v[x as usize]
+                    );
+                }
+                _ => {
+                    not_found = true;
+                }
+            },
+
             _ => {
                 not_found = true;
             }

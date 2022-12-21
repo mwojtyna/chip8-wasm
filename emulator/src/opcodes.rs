@@ -27,6 +27,7 @@ pub struct OpCodeBNNN {}
 pub struct OpCodeBXNN {}
 pub struct OpCodeCXNN {}
 pub struct OpCodeDXYN {}
+pub struct OpCodeFX07 {}
 
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
@@ -259,6 +260,12 @@ impl OpCode for OpCodeDXYN {
 
         processor.v[0xF] = flipped as u8;
         debug!("Flipped: {}", flipped);
+    }
+}
+impl OpCode for OpCodeFX07 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        processor.v[x] = processor.delay_timer;
     }
 }
 
@@ -804,5 +811,19 @@ mod tests {
             "processor.gfx set incorrectly!"
         );
         assert_eq!(processor.v[0xF], 0x1, "v[0xF] should be 0x1");
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX07() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.delay_timer = 0x23;
+
+        // Act
+        execute_instruction(&mut processor, 0xF007 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.v[x as usize], processor.delay_timer);
     }
 }
