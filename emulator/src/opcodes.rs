@@ -28,6 +28,7 @@ pub struct OpCodeBXNN {}
 pub struct OpCodeCXNN {}
 pub struct OpCodeDXYN {}
 pub struct OpCodeFX07 {}
+pub struct OpCodeFX15 {}
 
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
@@ -266,6 +267,12 @@ impl OpCode for OpCodeFX07 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
         processor.v[x] = processor.delay_timer;
+    }
+}
+impl OpCode for OpCodeFX15 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        processor.delay_timer = processor.v[x];
     }
 }
 
@@ -825,5 +832,19 @@ mod tests {
 
         // Assert
         assert_eq!(processor.v[x as usize], processor.delay_timer);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX15() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x23;
+
+        // Act
+        execute_instruction(&mut processor, 0xF015 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.delay_timer, processor.v[x as usize]);
     }
 }

@@ -361,6 +361,15 @@ impl Processor {
                         x, self.delay_timer, self.v[x as usize]
                     );
                 }
+                0x15 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX15::execute(self, &[x]);
+
+                    debug!(
+                        "Set delay timer to V{:X} ({:#06X}) -> {:#06X}",
+                        x, self.v[x as usize], self.delay_timer
+                    );
+                }
                 _ => {
                     not_found = true;
                 }
