@@ -30,6 +30,7 @@ pub struct OpCodeDXYN {}
 pub struct OpCodeFX07 {}
 pub struct OpCodeFX15 {}
 pub struct OpCodeFX18 {}
+pub struct OpCodeFX1E {}
 
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
@@ -280,6 +281,16 @@ impl OpCode for OpCodeFX18 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
         processor.sound_timer = processor.v[x];
+    }
+}
+impl OpCode for OpCodeFX1E {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        processor.i = processor.i.wrapping_add(processor.v[x] as u16);
+
+        if processor.i > 0x0FFF {
+            processor.v[0xF] = 1;
+        }
     }
 }
 
@@ -867,5 +878,36 @@ mod tests {
 
         // Assert
         assert_eq!(processor.sound_timer, processor.v[x as usize]);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX1E_no_overflow() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x23;
+        processor.i = 0x200;
+
+        // Act
+        execute_instruction(&mut processor, 0xF01E | (x << 8));
+
+        // Assert
+        assert_eq!(processor.i, 0x200 + 0x23);
+        assert_eq!(processor.v[0xF], 0x0);
+    }
+    #[wasm_bindgen_test]
+    fn test_FX1E_overflow() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x1;
+        processor.i = 0x0FFF;
+
+        // Act
+        execute_instruction(&mut processor, 0xF01E | (x << 8));
+
+        // Assert
+        assert_eq!(processor.i, 0x1000, "i should be 0x1000");
+        assert_eq!(processor.v[0xF], 0x1, "v[0xF] should be 0x1");
     }
 }

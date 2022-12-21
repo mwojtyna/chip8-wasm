@@ -379,6 +379,15 @@ impl Processor {
                         x, self.v[x as usize], self.sound_timer
                     );
                 }
+                0x1E => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX1E::execute(self, &[x]);
+
+                    debug!(
+                        "Set I to I + V{:X} ({:#06X}) -> {:#06X}",
+                        x, self.v[x as usize], self.i
+                    );
+                }
                 _ => {
                     not_found = true;
                 }
