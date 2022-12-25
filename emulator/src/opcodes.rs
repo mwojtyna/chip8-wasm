@@ -39,6 +39,7 @@ pub struct OpCodeFX18 {}
 pub struct OpCodeFX29 {}
 pub struct OpCodeFX33 {}
 pub struct OpCodeFX1E {}
+pub struct OpCodeFX55 {}
 
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
@@ -326,6 +327,16 @@ impl OpCode for OpCodeFX18 {
         processor.sound_timer = processor.v[x];
     }
 }
+impl OpCode for OpCodeFX1E {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        processor.i = processor.i.wrapping_add(processor.v[x] as u16);
+
+        if processor.i > 0x0FFF {
+            processor.v[0xF] = 1;
+        }
+    }
+}
 impl OpCode for OpCodeFX29 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
@@ -347,13 +358,15 @@ impl OpCode for OpCodeFX33 {
         processor.memory.data[processor.i as usize + 2] = ones;
     }
 }
-impl OpCode for OpCodeFX1E {
+impl OpCode for OpCodeFX55 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
-        processor.i = processor.i.wrapping_add(processor.v[x] as u16);
 
-        if processor.i > 0x0FFF {
-            processor.v[0xF] = 1;
+        for i in 0..=x {
+            processor.memory.data[processor.i as usize + i] = processor.v[i];
+            if processor.compatibility == Compatibility::Original {
+                processor.i += 1;
+            }
         }
     }
 }
@@ -1005,6 +1018,37 @@ mod tests {
     }
 
     #[wasm_bindgen_test]
+    fn test_FX1E_no_overflow() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x23;
+        processor.i = 0x200;
+
+        // Act
+        execute_instruction(&mut processor, 0xF01E | (x << 8));
+
+        // Assert
+        assert_eq!(processor.i, 0x200 + 0x23);
+        assert_eq!(processor.v[0xF], 0x0);
+    }
+    #[wasm_bindgen_test]
+    fn test_FX1E_overflow() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x1;
+        processor.i = 0x0FFF;
+
+        // Act
+        execute_instruction(&mut processor, 0xF01E | (x << 8));
+
+        // Assert
+        assert_eq!(processor.i, 0x1000, "i should be 0x1000");
+        assert_eq!(processor.v[0xF], 0x1, "v[0xF] should be 0x1");
+    }
+
+    #[wasm_bindgen_test]
     fn test_FX29() {
         // Arrange
         let mut processor = Processor::init();
@@ -1035,33 +1079,45 @@ mod tests {
     }
 
     #[wasm_bindgen_test]
-    fn test_FX1E_no_overflow() {
+    fn test_FX55_original() {
         // Arrange
-        let mut processor = Processor::init();
-        let x = 0x1;
-        processor.v[x as usize] = 0x23;
-        processor.i = 0x200;
+        let mut processor = Processor::init_compat(Compatibility::Original);
+        let x = 0x1_u16;
+        for i in 0..=x as usize {
+            processor.v[i] = i as u8;
+        }
+        processor.i = Memory::ROM_BEGIN_INDEX as u16;
 
         // Act
-        execute_instruction(&mut processor, 0xF01E | (x << 8));
+        execute_instruction(&mut processor, 0xF055 | (x << 8));
 
         // Assert
-        assert_eq!(processor.i, 0x200 + 0x23);
-        assert_eq!(processor.v[0xF], 0x0);
+        for i in 0..=x as usize {
+            assert_eq!(
+                processor.memory.data[(processor.i - x) as usize + i],
+                processor.v[i]
+            );
+        }
     }
     #[wasm_bindgen_test]
-    fn test_FX1E_overflow() {
+    fn test_FX55_new() {
         // Arrange
-        let mut processor = Processor::init();
-        let x = 0x1;
-        processor.v[x as usize] = 0x1;
-        processor.i = 0x0FFF;
+        let mut processor = Processor::init_compat(Compatibility::New);
+        let x = 0x1_u16;
+        for i in 0..=x as usize {
+            processor.v[i] = i as u8;
+        }
+        processor.i = Memory::ROM_BEGIN_INDEX as u16;
 
         // Act
-        execute_instruction(&mut processor, 0xF01E | (x << 8));
+        execute_instruction(&mut processor, 0xF055 | (x << 8));
 
         // Assert
-        assert_eq!(processor.i, 0x1000, "i should be 0x1000");
-        assert_eq!(processor.v[0xF], 0x1, "v[0xF] should be 0x1");
+        for i in 0..=x as usize {
+            assert_eq!(
+                processor.memory.data[processor.i as usize + i],
+                processor.v[i]
+            );
+        }
     }
 }

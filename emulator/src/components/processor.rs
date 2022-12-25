@@ -435,6 +435,15 @@ impl Processor {
                         x, self.v[x as usize], self.i
                     );
                 }
+                0x55 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX55::execute(self, &[x]);
+
+                    debug!(
+						"Store registers V0 through V{:X} in memory starting at location I ({:#06X})",
+						x, self.i
+					);
+                }
                 _ => {
                     not_found = true;
                 }
