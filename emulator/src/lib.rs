@@ -1,4 +1,5 @@
 mod components {
+    pub mod keypad;
     pub mod memory;
     pub mod processor;
     pub mod screen;
@@ -13,8 +14,7 @@ use std::time::Duration;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 
-extern crate console_error_panic_hook;
-
+#[derive(Debug)]
 struct Emulator {
     processor: processor::Processor,
     screen: screen::Screen,
@@ -45,7 +45,7 @@ impl Emulator {
 #[wasm_bindgen]
 pub fn start(compatibility: &str) {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    console_log::init_with_level(Level::Debug).expect("Failed initializing logger!");
+    console_log::init_with_level(Level::Info).expect("Failed initializing logger!");
 
     let compatibility_enum = match compatibility {
         "original" => Compatibility::Original,
@@ -58,10 +58,39 @@ pub fn start(compatibility: &str) {
     emulator
         .processor
         .memory
-        .load_rom(include_bytes!("roms/test_opcode.ch8").to_vec());
+        .load_rom(include_bytes!("roms/tests/test_suite.ch8").to_vec());
 
     debug!("{:#X?}", emulator.processor);
     debug!("{:?}", emulator.screen);
 
     spawn_local(async move { emulator.start().await });
+}
+
+#[wasm_bindgen]
+pub fn on_key_down(code: &str) {
+    let key = match code {
+        "Digit1" => 0x1,
+        "Digit2" => 0x2,
+        "Digit3" => 0x3,
+        "Digit4" => 0xC,
+        "KeyQ" => 0x4,
+        "KeyW" => 0x5,
+        "KeyE" => 0x6,
+        "KeyR" => 0xD,
+        "KeyA" => 0x7,
+        "KeyS" => 0x8,
+        "KeyD" => 0x9,
+        "KeyF" => 0xE,
+        "KeyZ" => 0xA,
+        "KeyX" => 0x0,
+        "KeyC" => 0xB,
+        "KeyV" => 0xF,
+        _ => 0x0,
+    };
+
+    keypad::INSTANCE.lock().unwrap().set_key(key);
+}
+#[wasm_bindgen]
+pub fn on_key_up() {
+    keypad::INSTANCE.lock().unwrap().unset_key();
 }

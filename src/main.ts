@@ -15,4 +15,7 @@ compatibility.onchange = () => {
 	location.reload();
 };
 
+document.onkeydown = e => emulator.on_key_down(e.code);
+document.onkeyup = () => emulator.on_key_up();
+
 emulator.start(compatibility.value);

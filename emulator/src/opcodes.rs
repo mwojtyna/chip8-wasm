@@ -1,3 +1,4 @@
+use super::keypad;
 use super::processor::{Compatibility, Processor};
 use super::screen::Screen;
 use array_init::array_init;
@@ -28,6 +29,7 @@ pub struct OpCodeBXNN {}
 pub struct OpCodeCXNN {}
 pub struct OpCodeDXYN {}
 pub struct OpCodeFX07 {}
+pub struct OpCodeFX0A {}
 pub struct OpCodeFX15 {}
 pub struct OpCodeFX18 {}
 pub struct OpCodeFX1E {}
@@ -271,6 +273,19 @@ impl OpCode for OpCodeFX07 {
         processor.v[x] = processor.delay_timer;
     }
 }
+impl OpCode for OpCodeFX0A {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let keypad = keypad::INSTANCE.lock().unwrap();
+
+        if keypad.get_current_key() == 0x0 {
+            processor.pc -= 2;
+        } else {
+            processor.v[x] = keypad.get_current_key();
+            info!("Key pressed: {:#02X}", keypad.get_current_key());
+        }
+    }
+}
 impl OpCode for OpCodeFX15 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
@@ -296,9 +311,8 @@ impl OpCode for OpCodeFX1E {
 
 #[allow(non_snake_case)]
 mod tests {
-    use crate::components::memory::Memory;
-
     use super::*;
+    use crate::components::memory::Memory;
     use array_init::array_init;
     use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -850,6 +864,23 @@ mod tests {
 
         // Assert
         assert_eq!(processor.v[x as usize], processor.delay_timer);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX0A() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        keypad::INSTANCE.lock().unwrap().set_key(0x1);
+
+        // Act
+        execute_instruction(&mut processor, 0xF00A | (x << 8));
+
+        // Assert
+        assert_eq!(
+            processor.v[x as usize],
+            keypad::INSTANCE.lock().unwrap().get_current_key()
+        );
     }
 
     #[wasm_bindgen_test]

@@ -33,9 +33,9 @@ pub struct Processor {
     /** VF is also used as a flag register; many instructions will set it to either 1 or 0 based on some rule, for example using it as a carry flag */
     pub v: [u8; 16],
 
+    pub compatibility: Compatibility,
     pub memory: Memory,
     pub gfx: [bool; Screen::WIDTH * Screen::HEIGHT],
-    pub compatibility: Compatibility,
 }
 impl Processor {
     /** Initializes with compatibility for original systems */
@@ -48,9 +48,9 @@ impl Processor {
             sound_timer: 0,
             timer_subtract: 0.0,
             v: array_init(|_| 0),
+            compatibility: Compatibility::Original,
             memory: Memory::init(),
             gfx: array_init(|_| false),
-            compatibility: Compatibility::Original,
         }
     }
     /** Initializes with compatibility for newer systems */
@@ -104,10 +104,10 @@ impl Processor {
             self.timer_subtract = 0.0;
         }
 
-        info!(
-            "Delay timer: {}, Sound timer: {}",
-            self.delay_timer, self.sound_timer
-        );
+        // info!(
+        //     "Delay timer: {}, Sound timer: {}",
+        //     self.delay_timer, self.sound_timer
+        // );
     }
 
     fn fetch(&self) -> u16 {
@@ -361,6 +361,12 @@ impl Processor {
                         x, self.delay_timer, self.v[x as usize]
                     );
                 }
+                0x0A => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX0A::execute(self, &[x]);
+
+                    debug!("Wait for keypress and store in V{:X}", x);
+                }
                 0x15 => {
                     let x = (rest & 0xF00) >> 8;
                     OpCodeFX15::execute(self, &[x]);
@@ -403,6 +409,15 @@ impl Processor {
         } else {
             Ok(())
         }
+    }
+
+    pub fn set_register(&mut self, register: usize, value: u8) -> &mut Processor {
+        self.v[register] = value;
+        self
+    }
+    pub fn set_program_counter(&mut self, value: u16) -> &mut Processor {
+        self.pc = value;
+        self
     }
 }
 
