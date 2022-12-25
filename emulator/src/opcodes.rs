@@ -312,7 +312,6 @@ impl OpCode for OpCodeFX0A {
             processor.pc -= 2;
         } else {
             processor.v[x] = keypad.get_current_key();
-            info!("Key pressed: {:#02X}", keypad.get_current_key());
         }
     }
 }

@@ -1,6 +1,6 @@
 use super::memory::Memory;
 use super::screen::Screen;
-use crate::{opcodes::*, Emulator};
+use crate::opcodes::*;
 use array_init::array_init;
 use log::*;
 
@@ -91,7 +91,7 @@ impl Processor {
     }
     fn update_timers(&mut self) {
         // We can't do this in a separate thread so we do it this way
-        self.timer_subtract += 1.0 / 60.0 / Emulator::INSTRUCTIONS_PER_SECOND as f32;
+        self.timer_subtract += 1.0 / 60.0;
 
         if self.timer_subtract >= 1.0 {
             if self.delay_timer > 0 {
@@ -103,11 +103,6 @@ impl Processor {
 
             self.timer_subtract = 0.0;
         }
-
-        // info!(
-        //     "Delay timer: {}, Sound timer: {}",
-        //     self.delay_timer, self.sound_timer
-        // );
     }
 
     fn fetch(&self) -> u16 {

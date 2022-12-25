@@ -58,7 +58,7 @@ pub fn start(compatibility: &str) {
     emulator
         .processor
         .memory
-        .load_rom(include_bytes!("roms/tests/test_opcode.ch8").to_vec());
+        .load_rom(include_bytes!("roms/morse_demo.ch8").to_vec());
 
     debug!("{:#X?}", emulator.processor);
     debug!("{:?}", emulator.screen);
@@ -88,7 +88,9 @@ pub fn on_key_down(code: &str) {
         _ => 0x0,
     };
 
-    keypad::INSTANCE.lock().unwrap().set_key(key);
+    if key != 0x0 {
+        keypad::INSTANCE.lock().unwrap().set_key(key);
+    }
 }
 #[wasm_bindgen]
 pub fn on_key_up() {
