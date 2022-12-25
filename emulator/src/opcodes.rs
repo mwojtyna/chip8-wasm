@@ -1,3 +1,5 @@
+use crate::components::memory::Memory;
+
 use super::keypad;
 use super::processor::{Compatibility, Processor};
 use super::screen::Screen;
@@ -34,6 +36,7 @@ pub struct OpCodeFX07 {}
 pub struct OpCodeFX0A {}
 pub struct OpCodeFX15 {}
 pub struct OpCodeFX18 {}
+pub struct OpCodeFX29 {}
 pub struct OpCodeFX1E {}
 
 pub trait OpCode {
@@ -320,6 +323,13 @@ impl OpCode for OpCodeFX18 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
         processor.sound_timer = processor.v[x];
+    }
+}
+impl OpCode for OpCodeFX29 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let digit = processor.v[x] as usize;
+        processor.i = Memory::FONT_BEGIN_INDEX as u16 + (digit * 5) as u16;
     }
 }
 impl OpCode for OpCodeFX1E {
@@ -977,6 +987,20 @@ mod tests {
 
         // Assert
         assert_eq!(processor.sound_timer, processor.v[x as usize]);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX29() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x4;
+
+        // Act
+        execute_instruction(&mut processor, 0xF029 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.i, Memory::FONT_BEGIN_INDEX as u16 + 4 * 5);
     }
 
     #[wasm_bindgen_test]

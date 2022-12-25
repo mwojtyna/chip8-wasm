@@ -408,6 +408,15 @@ impl Processor {
                         x, self.v[x as usize], self.sound_timer
                     );
                 }
+                0x29 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX29::execute(self, &[x]);
+
+                    debug!(
+                        "Set I to location of sprite for digit V{:X} ({:#06X}) -> {:#06X}",
+                        x, self.v[x as usize], self.i
+                    );
+                }
                 0x1E => {
                     let x = (rest & 0xF00) >> 8;
                     OpCodeFX1E::execute(self, &[x]);

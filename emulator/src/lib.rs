@@ -58,7 +58,7 @@ pub fn start(compatibility: &str) {
     emulator
         .processor
         .memory
-        .load_rom(include_bytes!("roms/tests/test_suite.ch8").to_vec());
+        .load_rom(include_bytes!("roms/tests/test_opcode.ch8").to_vec());
 
     debug!("{:#X?}", emulator.processor);
     debug!("{:?}", emulator.screen);
