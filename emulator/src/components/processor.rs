@@ -444,6 +444,15 @@ impl Processor {
 						x, self.i
 					);
                 }
+                0x65 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX65::execute(self, &[x]);
+
+                    debug!(
+						"Read registers V0 through V{:X} from memory starting at location I ({:#06X})",
+						x, self.i
+					);
+                }
                 _ => {
                     not_found = true;
                 }

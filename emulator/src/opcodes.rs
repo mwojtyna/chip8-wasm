@@ -40,6 +40,7 @@ pub struct OpCodeFX29 {}
 pub struct OpCodeFX33 {}
 pub struct OpCodeFX1E {}
 pub struct OpCodeFX55 {}
+pub struct OpCodeFX65 {}
 
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
@@ -364,6 +365,18 @@ impl OpCode for OpCodeFX55 {
 
         for i in 0..=x {
             processor.memory.data[processor.i as usize + i] = processor.v[i];
+            if processor.compatibility == Compatibility::Original {
+                processor.i += 1;
+            }
+        }
+    }
+}
+impl OpCode for OpCodeFX65 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+
+        for i in 0..=x {
+            processor.v[i] = processor.memory.data[processor.i as usize + i];
             if processor.compatibility == Compatibility::Original {
                 processor.i += 1;
             }
@@ -1117,6 +1130,49 @@ mod tests {
             assert_eq!(
                 processor.memory.data[processor.i as usize + i],
                 processor.v[i]
+            );
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX65_original() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::Original);
+        let x = 0x1_u16;
+        processor.i = Memory::ROM_BEGIN_INDEX as u16;
+        for i in 0..=x as usize {
+            processor.memory.data[processor.i as usize + i] = i as u8;
+        }
+
+        // Act
+        execute_instruction(&mut processor, 0xF065 | (x << 8));
+
+        // Assert
+        for i in 0..=x as usize {
+            assert_eq!(
+                processor.v[i],
+                processor.memory.data[(processor.i) as usize + i]
+            );
+        }
+    }
+    #[wasm_bindgen_test]
+    fn test_FX65_new() {
+        // Arrange
+        let mut processor = Processor::init_compat(Compatibility::New);
+        let x = 0x1_u16;
+        processor.i = Memory::ROM_BEGIN_INDEX as u16;
+        for i in 0..=x as usize {
+            processor.memory.data[processor.i as usize + i] = i as u8;
+        }
+
+        // Act
+        execute_instruction(&mut processor, 0xF065 | (x << 8));
+
+        // Assert
+        for i in 0..=x as usize {
+            assert_eq!(
+                processor.v[i],
+                processor.memory.data[processor.i as usize + i]
             );
         }
     }
