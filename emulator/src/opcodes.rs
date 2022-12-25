@@ -28,6 +28,8 @@ pub struct OpCodeBNNN {}
 pub struct OpCodeBXNN {}
 pub struct OpCodeCXNN {}
 pub struct OpCodeDXYN {}
+pub struct OpCodeEX9E {}
+pub struct OpCodeEXA1 {}
 pub struct OpCodeFX07 {}
 pub struct OpCodeFX0A {}
 pub struct OpCodeFX15 {}
@@ -265,6 +267,28 @@ impl OpCode for OpCodeDXYN {
 
         processor.v[0xF] = flipped as u8;
         debug!("Flipped: {}", flipped);
+    }
+}
+impl OpCode for OpCodeEX9E {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let keypad = keypad::INSTANCE.lock().unwrap();
+
+        if keypad.is_key_pressed() && processor.v[x] == keypad.get_current_key() {
+            processor.pc += 2;
+        }
+    }
+}
+impl OpCode for OpCodeEXA1 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let keypad = keypad::INSTANCE.lock().unwrap();
+
+        if (keypad.is_key_pressed() && processor.v[x] != keypad.get_current_key())
+            || !keypad.is_key_pressed()
+        {
+            processor.pc += 2;
+        }
     }
 }
 impl OpCode for OpCodeFX07 {
@@ -881,6 +905,50 @@ mod tests {
             processor.v[x as usize],
             keypad::INSTANCE.lock().unwrap().get_current_key()
         );
+    }
+
+    #[wasm_bindgen_test]
+    fn test_EX9E() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x1;
+        keypad::INSTANCE.lock().unwrap().set_key(0x1);
+
+        // Act
+        execute_instruction(&mut processor, 0xE09E | (x << 8));
+
+        // Assert
+        assert_eq!(processor.pc, 0x202);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_EXA1_wrong_key() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x1;
+        keypad::INSTANCE.lock().unwrap().set_key(0x2);
+
+        // Act
+        execute_instruction(&mut processor, 0xE0A1 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.pc, 0x202);
+    }
+    #[wasm_bindgen_test]
+    fn test_EXA1_no_key() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0x1;
+        keypad::INSTANCE.lock().unwrap().unset_key();
+
+        // Act
+        execute_instruction(&mut processor, 0xE0A1 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.pc, 0x202);
     }
 
     #[wasm_bindgen_test]

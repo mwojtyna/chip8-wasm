@@ -351,6 +351,29 @@ impl Processor {
                     self.v[x as usize], self.v[y as usize], n
                 );
             }
+            0xE => match rest & 0x0FF {
+                0x9E => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeEX9E::execute(self, &[x]);
+
+                    debug!(
+                        "Skip next instruction if key {:#06X} is pressed",
+                        self.v[x as usize]
+                    );
+                }
+                0xA1 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeEXA1::execute(self, &[x]);
+
+                    debug!(
+                        "Skip next instruction if key {:#06X} is not pressed",
+                        self.v[x as usize]
+                    );
+                }
+                _ => {
+                    not_found = true;
+                }
+            },
             0xF => match rest & 0x0FF {
                 0x07 => {
                     let x = (rest & 0xF00) >> 8;
