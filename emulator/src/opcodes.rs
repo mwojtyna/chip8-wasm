@@ -37,6 +37,7 @@ pub struct OpCodeFX0A {}
 pub struct OpCodeFX15 {}
 pub struct OpCodeFX18 {}
 pub struct OpCodeFX29 {}
+pub struct OpCodeFX33 {}
 pub struct OpCodeFX1E {}
 
 pub trait OpCode {
@@ -330,6 +331,20 @@ impl OpCode for OpCodeFX29 {
         let x = data[0] as usize;
         let digit = processor.v[x] as usize;
         processor.i = Memory::FONT_BEGIN_INDEX as u16 + (digit * 5) as u16;
+    }
+}
+impl OpCode for OpCodeFX33 {
+    fn execute(processor: &mut Processor, data: &[u16]) {
+        let x = data[0] as usize;
+        let value = processor.v[x];
+
+        let ones = value % 10;
+        let tens = (value / 10) % 10;
+        let hundreds = value / 100;
+
+        processor.memory.data[processor.i as usize] = hundreds;
+        processor.memory.data[processor.i as usize + 1] = tens;
+        processor.memory.data[processor.i as usize + 2] = ones;
     }
 }
 impl OpCode for OpCodeFX1E {
@@ -1001,6 +1016,22 @@ mod tests {
 
         // Assert
         assert_eq!(processor.i, Memory::FONT_BEGIN_INDEX as u16 + 4 * 5);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX33() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.v[x as usize] = 0xFE; // 254
+
+        // Act
+        execute_instruction(&mut processor, 0xF033 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.memory.data[processor.i as usize], 2);
+        assert_eq!(processor.memory.data[processor.i as usize + 1], 5);
+        assert_eq!(processor.memory.data[processor.i as usize + 2], 4);
     }
 
     #[wasm_bindgen_test]

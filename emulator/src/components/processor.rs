@@ -417,6 +417,15 @@ impl Processor {
                         x, self.v[x as usize], self.i
                     );
                 }
+                0x33 => {
+                    let x = (rest & 0xF00) >> 8;
+                    OpCodeFX33::execute(self, &[x]);
+
+                    debug!(
+                        "Store BCD representation of V{:X} ({:#06X}) in memory at I ({:#06X})",
+                        x, self.v[x as usize], self.i
+                    );
+                }
                 0x1E => {
                     let x = (rest & 0xF00) >> 8;
                     OpCodeFX1E::execute(self, &[x]);
