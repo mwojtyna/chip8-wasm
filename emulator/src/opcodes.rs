@@ -302,7 +302,7 @@ impl OpCode for OpCodeFX0A {
         let x = data[0] as usize;
         let keypad = keypad::INSTANCE.lock().unwrap();
 
-        if keypad.get_current_key() == 0x0 {
+        if !keypad.is_key_pressed() {
             processor.pc -= 2;
         } else {
             processor.v[x] = keypad.get_current_key();
@@ -877,37 +877,6 @@ mod tests {
     }
 
     #[wasm_bindgen_test]
-    fn test_FX07() {
-        // Arrange
-        let mut processor = Processor::init();
-        let x = 0x1;
-        processor.delay_timer = 0x23;
-
-        // Act
-        execute_instruction(&mut processor, 0xF007 | (x << 8));
-
-        // Assert
-        assert_eq!(processor.v[x as usize], processor.delay_timer);
-    }
-
-    #[wasm_bindgen_test]
-    fn test_FX0A() {
-        // Arrange
-        let mut processor = Processor::init();
-        let x = 0x1;
-        keypad::INSTANCE.lock().unwrap().set_key(0x1);
-
-        // Act
-        execute_instruction(&mut processor, 0xF00A | (x << 8));
-
-        // Assert
-        assert_eq!(
-            processor.v[x as usize],
-            keypad::INSTANCE.lock().unwrap().get_current_key()
-        );
-    }
-
-    #[wasm_bindgen_test]
     fn test_EX9E() {
         // Arrange
         let mut processor = Processor::init();
@@ -949,6 +918,37 @@ mod tests {
 
         // Assert
         assert_eq!(processor.pc, 0x202);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX07() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        processor.delay_timer = 0x23;
+
+        // Act
+        execute_instruction(&mut processor, 0xF007 | (x << 8));
+
+        // Assert
+        assert_eq!(processor.v[x as usize], processor.delay_timer);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_FX0A() {
+        // Arrange
+        let mut processor = Processor::init();
+        let x = 0x1;
+        keypad::INSTANCE.lock().unwrap().set_key(0x1);
+
+        // Act
+        execute_instruction(&mut processor, 0xF00A | (x << 8));
+
+        // Assert
+        assert_eq!(
+            processor.v[x as usize],
+            keypad::INSTANCE.lock().unwrap().get_current_key()
+        );
     }
 
     #[wasm_bindgen_test]
