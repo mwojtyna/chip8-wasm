@@ -469,15 +469,6 @@ impl Processor {
             Ok(())
         }
     }
-
-    pub fn set_register(&mut self, register: usize, value: u8) -> &mut Processor {
-        self.v[register] = value;
-        self
-    }
-    pub fn set_program_counter(&mut self, value: u16) -> &mut Processor {
-        self.pc = value;
-        self
-    }
 }
 
 #[cfg(test)]
