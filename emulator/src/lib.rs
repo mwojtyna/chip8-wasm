@@ -32,6 +32,8 @@ impl Emulator {
 
     pub fn cycle(&mut self) {
         self.processor.cycle();
+    }
+    pub fn draw(&self) {
         self.screen.update(&self.processor.gfx);
     }
 }
