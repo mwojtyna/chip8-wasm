@@ -1,0 +1,26 @@
+{
+	"css.validate": false,
+	"less.validate": false,
+	"scss.validate": false,
+	"stylelint.validate": ["css", "scss"],
+	"cSpell.words": [
+		"ANNN",
+		"bindgen",
+		"BNNN",
+		"BXNN",
+		"COSMAC",
+		"CXNN",
+		"DXYN",
+		"fluvio",
+		"keydown"
+	],
+	"emeraldwalk.runonsave": {
+		"commands": [
+			{
+				"match": "emulator/src/.*",
+				"cmd": "yarn wasm-build"
+			}
+		]
+	},
+	"typescript.tsdk": "node_modules/typescript/lib"
+}

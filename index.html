@@ -5,10 +5,32 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<title>CHIP-8 emulator</title>
+		<script src="https://kit.fontawesome.com/0c07aa3ce5.js" crossorigin="anonymous"></script>
 	</head>
-	<body class="flex h-screen w-screen flex-col items-center gap-10 bg-zinc-800 p-10 text-white">
+	<body class="flex flex-col items-center gap-10 bg-zinc-800 p-10 text-white">
 		<h1 class="text-5xl font-bold">CHIP-8 EMULATOR</h1>
-		<canvas width="640" height="320">Could not load emulator</canvas>
+		<canvas class="rendering-pixelated" aria-label="Emulator screen"
+			>Could not load emulator</canvas
+		>
+
+		<div class="flex items-center gap-6">
+			<label for="rom" class="text-2xl">GAME:</label>
+			<div class="flex gap-3">
+				<select id="rom" class="bg-white px-2 py-1 text-xl text-black" tabindex="-1">
+					<option value="" disabled selected>Select game</option>
+					<option value="airplane">Airplane</option>
+					<option value="brix">Brix</option>
+					<option value="cavern">Cavern</option>
+					<option value="pong1">Pong (vs AI)</option>
+					<option value="pong2">Pong (1v1)</option>
+					<option value="invaders">Space Invaders</option>
+					<option value="tetris">Tetris</option>
+					<option value="worm">Worm</option>
+				</select>
+				<i id="reload" class="fa-solid fa-rotate-right text-2xl hover:cursor-pointer"></i>
+			</div>
+		</div>
+
 		<script type="module" src="/src/main.ts"></script>
 	</body>
 </html>
