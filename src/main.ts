@@ -21,14 +21,16 @@ let animationId: number;
 
 const selectedRom = document.getElementById("rom")! as HTMLSelectElement;
 selectedRom.onchange = async () => {
-	clearInterval(intervalId);
-	cancelAnimationFrame(animationId);
 	await startGame();
 };
+
+document.getElementById("reload")!.onclick = async () => await loadRom();
 
 await startGame();
 
 async function startGame() {
+	clearInterval(intervalId);
+	cancelAnimationFrame(animationId);
 	await loadRom();
 	intervalId = setInterval(cycle, 2);
 	animationId = draw();
