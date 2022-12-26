@@ -7,17 +7,23 @@
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<title>CHIP-8 emulator</title>
 	</head>
-	<body class="flex h-screen w-screen flex-col items-center gap-10 bg-zinc-800 p-10 text-white">
+	<body class="flex flex-col items-center gap-10 bg-zinc-800 p-10 text-white">
 		<h1 class="text-5xl font-bold">CHIP-8 EMULATOR</h1>
 		<canvas class="rendering-pixelated" aria-label="Emulator screen"
 			>Could not load emulator</canvas
 		>
 
-		<div class="flex items-center gap-4 text-xl">
-			<label for="compatibility">COMPATIBILITY:</label>
-			<select id="compatibility" class="size bg-white px-2 py-1 text-black">
-				<option value="original">COSMAC VIP</option>
-				<option value="new" selected="selected">CHIP-48 / SUPER-CHIP</option>
+		<div class="flex gap-6">
+			<label for="rom" class="text-2xl">GAME:</label>
+			<select id="rom" class="bg-white px-2 py-1 text-xl text-black">
+				<option value="airplane">Airplane</option>
+				<option value="brix" selected="selected">Brix</option>
+				<option value="cavern">Cavern</option>
+				<option value="pong1">Pong (vs AI)</option>
+				<option value="pong2">Pong (1v1)</option>
+				<option value="invaders">Space Invaders</option>
+				<option value="tetris">Tetris</option>
+				<option value="worm">Worm</option>
 			</select>
 		</div>
 

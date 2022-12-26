@@ -345,7 +345,7 @@ impl OpCode for OpCodeFX29 {
     fn execute(processor: &mut Processor, data: &[u16]) {
         let x = data[0] as usize;
         let digit = processor.v[x] as usize;
-        processor.i = Memory::FONT_BEGIN_INDEX as u16 + (digit * 5) as u16;
+        processor.i = Memory::FONT_BEGIN_INDEX + (digit * 5) as u16;
     }
 }
 impl OpCode for OpCodeFX33 {
@@ -457,7 +457,7 @@ mod tests {
         // Assert
         assert_eq!(
             processor.stack[0],
-            Memory::ROM_BEGIN_INDEX as u16,
+            Memory::ROM_BEGIN_INDEX,
             "PC not added to stack!"
         );
         assert_eq!(processor.pc, nnn, "PC should be {:06X}!", nnn);
@@ -475,7 +475,7 @@ mod tests {
         execute_instruction(&mut processor, 0x3000 | (x << 8) | nn as u16);
 
         // Assert
-        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX + 0x2);
     }
 
     #[wasm_bindgen_test]
@@ -490,7 +490,7 @@ mod tests {
         execute_instruction(&mut processor, 0x4000 | (x << 8) | nn as u16);
 
         // Assert
-        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX + 0x2);
     }
 
     #[wasm_bindgen_test]
@@ -506,7 +506,7 @@ mod tests {
         execute_instruction(&mut processor, 0x5000 | (x << 8) | (y << 4));
 
         // Assert
-        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX + 0x2);
     }
 
     #[wasm_bindgen_test]
@@ -815,7 +815,7 @@ mod tests {
         execute_instruction(&mut processor, 0x9000 | (x << 8) | (y << 4));
 
         // Assert
-        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX as u16 + 0x2);
+        assert_eq!(processor.pc, Memory::ROM_BEGIN_INDEX + 0x2);
     }
 
     #[wasm_bindgen_test]
@@ -1075,7 +1075,7 @@ mod tests {
         execute_instruction(&mut processor, 0xF029 | (x << 8));
 
         // Assert
-        assert_eq!(processor.i, Memory::FONT_BEGIN_INDEX as u16 + 4 * 5);
+        assert_eq!(processor.i, Memory::FONT_BEGIN_INDEX + 4 * 5);
     }
 
     #[wasm_bindgen_test]
@@ -1102,7 +1102,7 @@ mod tests {
         for i in 0..=x as usize {
             processor.v[i] = i as u8;
         }
-        processor.i = Memory::ROM_BEGIN_INDEX as u16;
+        processor.i = Memory::ROM_BEGIN_INDEX;
 
         // Act
         execute_instruction(&mut processor, 0xF055 | (x << 8));
@@ -1123,7 +1123,7 @@ mod tests {
         for i in 0..=x as usize {
             processor.v[i] = i as u8;
         }
-        processor.i = Memory::ROM_BEGIN_INDEX as u16;
+        processor.i = Memory::ROM_BEGIN_INDEX;
 
         // Act
         execute_instruction(&mut processor, 0xF055 | (x << 8));
@@ -1142,7 +1142,7 @@ mod tests {
         // Arrange
         let mut processor = Processor::init_compat(Compatibility::Original);
         let x = 0x1_u16;
-        processor.i = Memory::ROM_BEGIN_INDEX as u16;
+        processor.i = Memory::ROM_BEGIN_INDEX;
         for i in 0..=x as usize {
             processor.memory.data[processor.i as usize + i] = i as u8;
         }
@@ -1163,7 +1163,7 @@ mod tests {
         // Arrange
         let mut processor = Processor::init_compat(Compatibility::New);
         let x = 0x1_u16;
-        processor.i = Memory::ROM_BEGIN_INDEX as u16;
+        processor.i = Memory::ROM_BEGIN_INDEX;
         for i in 0..=x as usize {
             processor.memory.data[processor.i as usize + i] = i as u8;
         }

@@ -6,7 +6,8 @@ mod components {
 }
 pub mod opcodes;
 
-use crate::components::*;
+use crate::components::{memory::Memory, *};
+use array_init::array_init;
 use components::processor::Compatibility;
 use log::*;
 use wasm_bindgen::prelude::*;
@@ -27,7 +28,11 @@ impl Emulator {
         }
     }
     pub fn load_rom(&mut self, rom: Vec<u8>) {
+        self.processor.pc = Memory::ROM_BEGIN_INDEX;
+        self.processor.memory.clear();
+        self.processor.memory.load_fonts();
         self.processor.memory.load_rom(rom);
+        self.processor.gfx = array_init(|_| 0);
     }
 
     pub fn cycle(&mut self) {

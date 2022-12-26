@@ -23,8 +23,8 @@ impl Memory {
         0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
         0xF0, 0x80, 0xF0, 0x80, 0x80, // F
     ];
-    pub const FONT_BEGIN_INDEX: usize = 0x50;
-    pub const ROM_BEGIN_INDEX: usize = 0x200;
+    pub const FONT_BEGIN_INDEX: u16 = 0x50;
+    pub const ROM_BEGIN_INDEX: u16 = 0x200;
 
     pub fn init() -> Memory {
         Memory {
@@ -34,13 +34,17 @@ impl Memory {
 
     pub fn load_fonts(&mut self) {
         for (i, font) in Memory::FONT_SET.iter().enumerate() {
-            self.data[i + Memory::FONT_BEGIN_INDEX] = *font;
+            self.data[i + Memory::FONT_BEGIN_INDEX as usize] = *font;
         }
     }
     pub fn load_rom(&mut self, rom: Vec<u8>) {
         for (i, value) in rom.iter().enumerate() {
-            self.data[Memory::ROM_BEGIN_INDEX + i] = *value;
+            self.data[Memory::ROM_BEGIN_INDEX as usize + i] = *value;
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.data = array_init(|_| 0);
     }
 }
 
@@ -58,8 +62,8 @@ mod tests {
 
         // Assert
         assert_eq!(
-            memory.data
-                [Memory::FONT_BEGIN_INDEX..(Memory::FONT_BEGIN_INDEX + Memory::FONT_SET.len())],
+            memory.data[Memory::FONT_BEGIN_INDEX as usize
+                ..(Memory::FONT_BEGIN_INDEX as usize + Memory::FONT_SET.len())],
             Memory::FONT_SET
         );
     }
@@ -75,7 +79,8 @@ mod tests {
 
         // Assert
         assert_eq!(
-            memory.data[Memory::ROM_BEGIN_INDEX..(Memory::ROM_BEGIN_INDEX + rom.len())],
+            memory.data
+                [Memory::ROM_BEGIN_INDEX as usize..(Memory::ROM_BEGIN_INDEX as usize + rom.len())],
             rom
         );
     }

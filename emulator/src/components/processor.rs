@@ -45,7 +45,7 @@ impl Processor {
     /** Initializes with compatibility for original systems */
     pub fn init() -> Processor {
         let processor = Processor {
-            pc: Memory::ROM_BEGIN_INDEX as u16,
+            pc: Memory::ROM_BEGIN_INDEX,
             i: 0,
             stack: Vec::new(),
             delay_timer: 0,
