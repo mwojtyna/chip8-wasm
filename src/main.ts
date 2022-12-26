@@ -21,6 +21,7 @@ let animationId: number;
 
 const selectedRom = document.getElementById("rom")! as HTMLSelectElement;
 selectedRom.onchange = async () => {
+	selectedRom.blur();
 	await startGame();
 };
 
