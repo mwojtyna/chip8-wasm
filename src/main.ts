@@ -16,26 +16,19 @@ document.onkeydown = e => wasm.on_key_down(e.code);
 document.onkeyup = () => wasm.on_key_up();
 
 const emulator = Emulator.init(1);
-let intervalId: NodeJS.Timer;
-let animationId: number;
 
 const selectedRom = document.getElementById("rom")! as HTMLSelectElement;
 selectedRom.onchange = async () => {
 	selectedRom.blur();
-	await startGame();
+	await loadRom();
 };
 
 document.getElementById("reload")!.onclick = async () => await loadRom();
 
-await startGame();
+await loadRom();
+setInterval(cycle, 2);
+draw();
 
-async function startGame() {
-	clearInterval(intervalId);
-	cancelAnimationFrame(animationId);
-	await loadRom();
-	intervalId = setInterval(cycle, 2);
-	animationId = draw();
-}
 async function loadRom() {
 	if (selectedRom.value === "") return;
 
