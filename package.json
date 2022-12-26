@@ -7,7 +7,8 @@
 		"wasm-test": "wasm-pack test --node emulator/",
 		"build": "tsc && vite build && du -h -d0 dist",
 		"preview": "vite preview",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"deploy": "push-dir --dir=dist --branch=gh-pages --cleanup && gh-pages -d dist"
 	},
 	"devDependencies": {
 		"@types/node": "^18.11.17",
@@ -16,9 +17,11 @@
 		"@typescript-eslint/parser": "^5.47.0",
 		"autoprefixer": "^10.4.13",
 		"eslint": "^8.30.0",
+		"gh-pages": "^4.0.0",
 		"postcss": "^8.4.20",
 		"prettier": "^2.8.1",
 		"prettier-plugin-tailwindcss": "^0.2.1",
+		"push-dir": "^0.4.1",
 		"tailwindcss": "^3.2.4",
 		"tailwindcss-image-rendering": "^1.0.2",
 		"typescript": "^4.9.4",
