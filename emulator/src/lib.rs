@@ -46,7 +46,7 @@ impl Emulator {
 #[wasm_bindgen]
 pub fn init() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    console_log::init_with_level(Level::Info).expect("Failed initializing logger!");
+    console_log::init_with_level(Level::Warn).expect("Failed initializing logger!");
 }
 
 #[wasm_bindgen]

@@ -19,15 +19,15 @@ const emulator = Emulator.init(1);
 
 const selectedRom = document.getElementById("rom")! as HTMLSelectElement;
 selectedRom.onchange = async () => {
-	await loadRom(emulator, selectedRom.value);
+	await loadRom();
 };
-await loadRom(emulator, selectedRom.value);
+await loadRom();
 
 setInterval(cycle, 2);
 draw();
 
-async function loadRom(emulator: Emulator, rom: string) {
-	const response = await fetch(`roms/${rom}.ch8`);
+async function loadRom() {
+	const response = await fetch(`roms/${selectedRom.value}.ch8`);
 	const data = await response.arrayBuffer();
 	emulator.load_rom(new Uint8Array(data));
 }
