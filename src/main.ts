@@ -22,11 +22,11 @@ document.onkeydown = e => wasm.on_key_down(e.code);
 document.onkeyup = () => wasm.on_key_up();
 
 const emulator = Emulator.init(compatibility.selectedIndex);
-const response = await fetch("roms/games/cavern.ch8");
+const response = await fetch("roms/games/brix.ch8");
 const rom = await response.arrayBuffer();
 emulator.load_rom(new Uint8Array(rom));
 
-setInterval(cycle, 3);
+setInterval(cycle, 2);
 draw();
 
 function cycle() {
