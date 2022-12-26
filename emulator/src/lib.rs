@@ -8,62 +8,37 @@ pub mod opcodes;
 
 use crate::components::*;
 use components::processor::Compatibility;
-use fluvio_wasm_timer::Delay;
+use js_sys::Uint8Array;
 use log::*;
-use std::time::Duration;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::spawn_local;
 
+#[wasm_bindgen]
 #[derive(Debug)]
-struct Emulator {
+pub struct Emulator {
     processor: processor::Processor,
-    screen: screen::Screen,
 }
-impl Emulator {
-    const INSTRUCTIONS_PER_SECOND: usize = 700;
 
+#[wasm_bindgen]
+impl Emulator {
     pub fn init(compatibility: Compatibility) -> Emulator {
         Emulator {
             processor: processor::Processor::init_compat(compatibility),
-            screen: screen::Screen::init(),
         }
     }
-    pub async fn start(&mut self) {
-        loop {
-            self.processor.cycle();
-            self.screen.update(&self.processor.gfx);
+    pub fn load_rom(&mut self, rom: Vec<u8>) {
+        self.processor.memory.load_rom(rom);
+    }
 
-            Delay::new(Duration::from_secs_f32(
-                1.0 / Self::INSTRUCTIONS_PER_SECOND as f32,
-            ))
-            .await
-            .expect("Error waiting for delay!");
-        }
+    pub fn cycle(&mut self) -> Uint8Array {
+        self.processor.cycle();
+        Uint8Array::from(self.processor.gfx.to_vec().as_slice())
     }
 }
 
 #[wasm_bindgen]
-pub fn start(compatibility: &str) {
+pub fn init() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     console_log::init_with_level(Level::Info).expect("Failed initializing logger!");
-
-    let compatibility_enum = match compatibility {
-        "original" => Compatibility::Original,
-        "new" => Compatibility::New,
-        _ => panic!("Invalid compatibility setting!"),
-    };
-
-    let mut emulator = Emulator::init(compatibility_enum);
-    emulator.processor.memory.load_fonts();
-    emulator
-        .processor
-        .memory
-        .load_rom(include_bytes!("roms/morse_demo.ch8").to_vec());
-
-    debug!("{:#X?}", emulator.processor);
-    debug!("{:?}", emulator.screen);
-
-    spawn_local(async move { emulator.start().await });
 }
 
 #[wasm_bindgen]

@@ -48,7 +48,7 @@ pub trait OpCode {
 
 impl OpCode for OpCode00E0 {
     fn execute(processor: &mut Processor, _: &[u16]) {
-        processor.gfx = array_init(|_| false);
+        processor.gfx = array_init(|_| 0);
     }
 }
 impl OpCode for OpCode00EE {
@@ -263,9 +263,9 @@ impl OpCode for OpCodeDXYN {
                 let gfx_i = (sprite_y + row) * Screen::WIDTH + (sprite_x + col);
 
                 let prev_gfx = processor.gfx[gfx_i];
-                processor.gfx[gfx_i] ^= sprite_bit == 1;
+                processor.gfx[gfx_i] ^= sprite_bit;
 
-                if prev_gfx && !processor.gfx[gfx_i] {
+                if prev_gfx == 1 && processor.gfx[gfx_i] == 0 {
                     flipped = true;
                 }
             }
@@ -400,13 +400,13 @@ mod tests {
     fn test_00E0() {
         // Arrange
         let mut processor = Processor::init();
-        processor.gfx = array_init(|_| true);
+        processor.gfx = array_init(|_| 1);
 
         // Act
         execute_instruction(&mut processor, 0x00E0);
 
         // Assert
-        assert_eq!(processor.gfx, array_init(|_| false));
+        assert_eq!(processor.gfx, array_init(|_| 0));
     }
 
     #[wasm_bindgen_test]
@@ -892,7 +892,7 @@ mod tests {
         // Assert
         assert_eq!(
             processor.gfx[gfx_start..gfx_start + 8],
-            [false, true, false, false, false, false, false, true],
+            [0, 1, 0, 0, 0, 0, 0, 1],
             "processor.gfx set incorrectly!"
         );
         assert_eq!(processor.v[0xF], 0x0, "v[0xF] should be 0x0");
@@ -912,7 +912,7 @@ mod tests {
         processor.v[y as usize] = sprite_y;
         processor.i = 0x200;
         processor.memory.data[processor.i as usize] = 0b01000001;
-        processor.gfx = array_init(|_| true);
+        processor.gfx = array_init(|_| 1);
 
         // Act
         execute_instruction(&mut processor, 0xD000 | (x << 8) | (y << 4) | n);
@@ -920,7 +920,7 @@ mod tests {
         // Assert
         assert_eq!(
             processor.gfx[gfx_start..gfx_start + 8],
-            [true, false, true, true, true, true, true, false],
+            [1, 0, 1, 1, 1, 1, 1, 0],
             "processor.gfx set incorrectly!"
         );
         assert_eq!(processor.v[0xF], 0x1, "v[0xF] should be 0x1");

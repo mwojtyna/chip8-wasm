@@ -3,7 +3,9 @@ use super::screen::Screen;
 use crate::opcodes::*;
 use array_init::array_init;
 use log::*;
+use wasm_bindgen::prelude::wasm_bindgen;
 
+#[wasm_bindgen]
 #[derive(Debug, PartialEq)]
 pub enum Compatibility {
     Original,
@@ -35,7 +37,7 @@ pub struct Processor {
 
     pub compatibility: Compatibility,
     pub memory: Memory,
-    pub gfx: [bool; Screen::WIDTH * Screen::HEIGHT],
+    pub gfx: [u8; Screen::WIDTH * Screen::HEIGHT],
 }
 impl Processor {
     /** Initializes with compatibility for original systems */
@@ -50,7 +52,7 @@ impl Processor {
             v: array_init(|_| 0),
             compatibility: Compatibility::Original,
             memory: Memory::init(),
-            gfx: array_init(|_| false),
+            gfx: array_init(|_| 0),
         }
     }
     /** Initializes with compatibility for newer systems */
