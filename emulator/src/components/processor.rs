@@ -93,7 +93,7 @@ impl Processor {
     }
     fn update_timers(&mut self) {
         // We can't do this in a separate thread so we do it this way
-        self.timer_subtract += 1.0 / 60.0;
+        self.timer_subtract += 1.0 / 10.0;
 
         if self.timer_subtract >= 1.0 {
             if self.delay_timer > 0 {

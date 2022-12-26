@@ -8,7 +8,6 @@ pub mod opcodes;
 
 use crate::components::*;
 use components::processor::Compatibility;
-use js_sys::Uint8Array;
 use log::*;
 use wasm_bindgen::prelude::*;
 
@@ -16,6 +15,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Debug)]
 pub struct Emulator {
     processor: processor::Processor,
+    screen: screen::Screen,
 }
 
 #[wasm_bindgen]
@@ -23,15 +23,16 @@ impl Emulator {
     pub fn init(compatibility: Compatibility) -> Emulator {
         Emulator {
             processor: processor::Processor::init_compat(compatibility),
+            screen: screen::Screen::init(),
         }
     }
     pub fn load_rom(&mut self, rom: Vec<u8>) {
         self.processor.memory.load_rom(rom);
     }
 
-    pub fn cycle(&mut self) -> Uint8Array {
+    pub fn cycle(&mut self) {
         self.processor.cycle();
-        Uint8Array::from(self.processor.gfx.to_vec().as_slice())
+        self.screen.update(&self.processor.gfx);
     }
 }
 

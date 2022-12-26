@@ -262,6 +262,10 @@ impl OpCode for OpCodeDXYN {
                 let sprite_bit = (sprite >> (width - 1 - col)) & 0x1;
                 let gfx_i = (sprite_y + row) * Screen::WIDTH + (sprite_x + col);
 
+                if gfx_i >= processor.gfx.len() {
+                    continue;
+                }
+
                 let prev_gfx = processor.gfx[gfx_i];
                 processor.gfx[gfx_i] ^= sprite_bit;
 
