@@ -24,12 +24,17 @@ impl Screen {
                 canvas.set_width(Self::WIDTH as u32);
                 canvas.set_height(Self::HEIGHT as u32);
 
-                canvas
+                let ctx = canvas
                     .get_context("2d")
                     .unwrap()
                     .expect("Could not get canvas context!")
                     .dyn_into::<CanvasRenderingContext2d>()
-                    .expect("Error casting canvas context type!")
+                    .expect("Error casting canvas context type!");
+
+                ctx.set_fill_style(&"#000".into());
+                ctx.fill_rect(0.0, 0.0, Self::WIDTH as f64, Self::HEIGHT as f64);
+
+                ctx
             },
         }
     }

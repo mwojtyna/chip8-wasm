@@ -29,10 +29,10 @@ impl Emulator {
     }
     pub fn load_rom(&mut self, rom: Vec<u8>) {
         self.processor.pc = Memory::ROM_BEGIN_INDEX;
+        self.processor.gfx = array_init(|_| 0);
         self.processor.memory.clear();
         self.processor.memory.load_fonts();
         self.processor.memory.load_rom(rom);
-        self.processor.gfx = array_init(|_| 0);
     }
 
     pub fn cycle(&mut self) {
