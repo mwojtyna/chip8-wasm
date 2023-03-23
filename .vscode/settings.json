@@ -10,13 +10,5 @@
 		"fluvio",
 		"keydown"
 	],
-	"emeraldwalk.runonsave": {
-		"commands": [
-			{
-				"match": "emulator/src/.*",
-				"cmd": "yarn wasm-build"
-			}
-		]
-	},
 	"typescript.tsdk": "node_modules/typescript/lib"
 }
