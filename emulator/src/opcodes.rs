@@ -6,41 +6,41 @@ use super::screen::Screen;
 use array_init::array_init;
 use log::*;
 
-pub struct OpCode00E0 {}
-pub struct OpCode00EE {}
-pub struct OpCode1NNN {}
-pub struct OpCode2NNN {}
-pub struct OpCode3XNN {}
-pub struct OpCode4XNN {}
-pub struct OpCode5XY0 {}
-pub struct OpCode6XNN {}
-pub struct OpCode7XNN {}
-pub struct OpCode8XY0 {}
-pub struct OpCode8XY1 {}
-pub struct OpCode8XY2 {}
-pub struct OpCode8XY3 {}
-pub struct OpCode8XY4 {}
-pub struct OpCode8XY5 {}
-pub struct OpCode8XY6 {}
-pub struct OpCode8XY7 {}
-pub struct OpCode8XYE {}
-pub struct OpCode9XY0 {}
-pub struct OpCodeANNN {}
-pub struct OpCodeBNNN {}
-pub struct OpCodeBXNN {}
-pub struct OpCodeCXNN {}
-pub struct OpCodeDXYN {}
-pub struct OpCodeEX9E {}
-pub struct OpCodeEXA1 {}
-pub struct OpCodeFX07 {}
-pub struct OpCodeFX0A {}
-pub struct OpCodeFX15 {}
-pub struct OpCodeFX18 {}
-pub struct OpCodeFX29 {}
-pub struct OpCodeFX33 {}
-pub struct OpCodeFX1E {}
-pub struct OpCodeFX55 {}
-pub struct OpCodeFX65 {}
+pub struct OpCode00E0;
+pub struct OpCode00EE;
+pub struct OpCode1NNN;
+pub struct OpCode2NNN;
+pub struct OpCode3XNN;
+pub struct OpCode4XNN;
+pub struct OpCode5XY0;
+pub struct OpCode6XNN;
+pub struct OpCode7XNN;
+pub struct OpCode8XY0;
+pub struct OpCode8XY1;
+pub struct OpCode8XY2;
+pub struct OpCode8XY3;
+pub struct OpCode8XY4;
+pub struct OpCode8XY5;
+pub struct OpCode8XY6;
+pub struct OpCode8XY7;
+pub struct OpCode8XYE;
+pub struct OpCode9XY0;
+pub struct OpCodeANNN;
+pub struct OpCodeBNNN;
+pub struct OpCodeBXNN;
+pub struct OpCodeCXNN;
+pub struct OpCodeDXYN;
+pub struct OpCodeEX9E;
+pub struct OpCodeEXA1;
+pub struct OpCodeFX07;
+pub struct OpCodeFX0A;
+pub struct OpCodeFX15;
+pub struct OpCodeFX18;
+pub struct OpCodeFX29;
+pub struct OpCodeFX33;
+pub struct OpCodeFX1E;
+pub struct OpCodeFX55;
+pub struct OpCodeFX65;
 
 pub trait OpCode {
     fn execute(processor: &mut Processor, data: &[u16]);
